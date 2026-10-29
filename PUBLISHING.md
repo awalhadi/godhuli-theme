@@ -41,14 +41,9 @@ Replace `your-name` in the commented screenshot link in `README.md` too.
 
 ### 0.3 (Strongly recommended) Icon and screenshots
 
-- **Icon:** a PNG of at least 128×128 (256×256 is ideal) saved as `icon.png` in the project root. Add `"icon": "icon.png"` to `package.json`. SVG is **not** accepted. The README describes the intended design.
-- **Screenshots:** themes sell on screenshots.
-  1. Open `preview/preview.tsx` in each flavor and take a screenshot.
-  2. Save them as `images/dark.png` and so on, then commit and push.
-  3. Reference them in `README.md` by full HTTPS URL, for example `https://raw.githubusercontent.com/<you>/godhuli-theme/main/images/dark.png`.
-
-  README images must be HTTPS, and SVG images are rejected unless they come from a trusted badge provider.
-- Add `images/` to `.vscodeignore` so the screenshots stay out of the `.vsix`. The README loads them from GitHub.
+- **Icon:** already done. `npm run screenshots` renders `images/icon.png` (256×256), and `package.json` points to it.
+- **Screenshots:** already done. `npm run screenshots` regenerates `images/hero-dark.png`, `night.png`, `mist.png`, `light.png` and `flavors.png` from the tokens. The README uses relative `images/…` paths, and `vsce` rewrites them to HTTPS GitHub URLs from `repository`, so **push `images/` to GitHub before publishing**.
+- `.vscodeignore` keeps the screenshots out of the `.vsix` (only the icon ships). The README loads them from GitHub.
 
 ---
 
@@ -192,6 +187,5 @@ A version number can only be published **once** per registry. If something is wr
 - [ ] `npm run check` says **All checks passed**
 - [ ] `CHANGELOG.md` has a new entry and `version` is bumped
 - [ ] `publisher`, `repository`, `bugs` and `homepage` are real (no `your-…` placeholders)
-- [ ] `icon.png` exists and is set in `package.json`
-- [ ] Screenshots are linked by HTTPS
+- [ ] `npm run screenshots` was run after the last color change, and `images/` is pushed to GitHub
 - [ ] The `.vsix` was installed locally and all four flavors were checked

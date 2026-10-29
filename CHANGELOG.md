@@ -9,6 +9,8 @@
 - Light: lower-glare paper (L\* 96 → 94) and softer ink (Lc 89 → 85).
 - New gates: unified chrome, plane step, Night halation cap, Light glare cap, opaque-base guard for composited checks.
 - Marketplace metadata (pricing, repository, bugs, homepage) and `package`/`publish:vscode`/`publish:ovsx` scripts. Added PUBLISHING.md.
+- Marketplace SEO: keyword-first display name and description, 30 intent tags, README rewritten as a landing page (benefits, flavors, install, comparisons, FAQ). Added MARKETING.md growth playbook.
+- Generated Marketplace images (`npm run screenshots`): hero workbench, Night/Mist/Light galleries, 4-flavor comparison grid and the ember-sun icon, all rendered from the tokens with Shiki and headless Chrome.
 
 ## 0.1.0 — 2026-10-29
 

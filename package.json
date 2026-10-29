@@ -1,7 +1,8 @@
 {
   "name": "godhuli-theme",
-  "displayName": "Godhuli",
-  "description": "Dusk-lit editor themes for long sessions: warm umber canvas, cool structure, warm literals. Dark, Night, Light and Mist flavors.",
+  "displayName": "Godhuli Theme — Warm Eye Comfort",
+  "description": "Warm, eye-comfort dark & light theme for VS Code: low blue light, OLED Night, soft Mist, paper Light. Colorblind-safe, borderless, APCA-tuned.",
+  "icon": "images/icon.png",
   "version": "0.2.0",
   "publisher": "NotifyX",
   "license": "MIT",
@@ -9,12 +10,12 @@
   "preview": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-name/godhuli-theme.git"
+    "url": "https://github.com/awalhadi/godhuli-theme.git"
   },
   "bugs": {
-    "url": "https://github.com/your-name/godhuli-theme/issues"
+    "url": "https://github.com/awalhadi/godhuli-theme/issues"
   },
-  "homepage": "https://github.com/your-name/godhuli-theme#readme",
+  "homepage": "https://github.com/awalhadi/godhuli-theme#readme",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -27,20 +28,34 @@
     "dark theme",
     "light theme",
     "eye comfort",
-    "low blue light",
+    "eye strain",
+    "low contrast",
+    "soft",
     "warm",
-    "dusk",
+    "warm dark",
+    "low blue light",
+    "night",
+    "oled",
+    "sepia",
+    "paper",
     "accessible",
     "colorblind",
-    "apca",
+    "color blind",
     "semantic highlighting",
-    "oled",
     "borderless",
     "minimal",
-    "godhuli"
+    "modern",
+    "clean",
+    "earth tones",
+    "low light",
+    "comfortable",
+    "dim",
+    "brown",
+    "godhuli",
+    "dusk"
   ],
   "galleryBanner": {
-    "color": "#24211F",
+    "color": "#1D1B19",
     "theme": "dark"
   },
   "contributes": {
@@ -78,6 +93,10 @@
     "vscode:prepublish": "bun run build && bun run check",
     "package": "npx @vscode/vsce package",
     "publish:vscode": "npx @vscode/vsce publish",
-    "publish:ovsx": "npx ovsx publish"
+    "publish:ovsx": "npx ovsx publish",
+    "screenshots": "node scripts/screenshots.mjs"
+  },
+  "devDependencies": {
+    "shiki": "3.13.0"
   }
 }

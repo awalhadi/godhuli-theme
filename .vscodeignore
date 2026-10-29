@@ -6,3 +6,8 @@ docs/**
 **/*.map
 .gitignore
 PUBLISHING.md
+MARKETING.md
+node_modules/**
+images/**
+!images/icon.png
+package-lock.json
