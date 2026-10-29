@@ -1,0 +1,8 @@
+.vscode/**
+scripts/**
+tokens/**
+preview/**
+docs/**
+**/*.map
+.gitignore
+PUBLISHING.md

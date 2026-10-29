@@ -1,0 +1,15 @@
+diff --git a/src/order.ts b/src/order.ts
+index 3f9a2c1..8b7e4d0 100644
+--- a/src/order.ts
++++ b/src/order.ts
+@@ -12,9 +12,11 @@ export interface Order {
+   readonly id: string;
+-  items: LineItem[];
++  items: ReadonlyArray<LineItem>;
+   status: OrderStatus;
++  placedAt?: Date | null;
+ }
+
+-export const total = (items) => items.reduce((s, i) => s + i.qty * i.price, 0);
++export const total = (items: readonly LineItem[]): number =>
++  items.reduce((sum, { qty, price }) => sum + qty * price, 0) * (1 + TAX_RATE);

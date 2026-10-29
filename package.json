@@ -1,0 +1,83 @@
+{
+  "name": "godhuli-theme",
+  "displayName": "Godhuli",
+  "description": "Dusk-lit editor themes for long sessions: warm umber canvas, cool structure, warm literals. Dark, Night, Light and Mist flavors.",
+  "version": "0.2.0",
+  "publisher": "NotifyX",
+  "license": "MIT",
+  "pricing": "Free",
+  "preview": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-name/godhuli-theme.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-name/godhuli-theme/issues"
+  },
+  "homepage": "https://github.com/your-name/godhuli-theme#readme",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Themes"
+  ],
+  "keywords": [
+    "theme",
+    "color theme",
+    "dark theme",
+    "light theme",
+    "eye comfort",
+    "low blue light",
+    "warm",
+    "dusk",
+    "accessible",
+    "colorblind",
+    "apca",
+    "semantic highlighting",
+    "oled",
+    "borderless",
+    "minimal",
+    "godhuli"
+  ],
+  "galleryBanner": {
+    "color": "#24211F",
+    "theme": "dark"
+  },
+  "contributes": {
+    "themes": [
+      {
+        "id": "Godhuli Dark",
+        "label": "Godhuli Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/godhuli-dark.json"
+      },
+      {
+        "id": "Godhuli Night",
+        "label": "Godhuli Night",
+        "uiTheme": "vs-dark",
+        "path": "./themes/godhuli-night.json"
+      },
+      {
+        "id": "Godhuli Mist",
+        "label": "Godhuli Mist",
+        "uiTheme": "vs-dark",
+        "path": "./themes/godhuli-mist.json"
+      },
+      {
+        "id": "Godhuli Light",
+        "label": "Godhuli Light",
+        "uiTheme": "vs",
+        "path": "./themes/godhuli-light.json"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "docs": "node scripts/check.mjs --docs",
+    "vscode:prepublish": "bun run build && bun run check",
+    "package": "npx @vscode/vsce package",
+    "publish:vscode": "npx @vscode/vsce publish",
+    "publish:ovsx": "npx ovsx publish"
+  }
+}
