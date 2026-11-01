@@ -1,7 +1,8 @@
 // Scope audit: which TextMate rule actually wins for every token in preview/, using VS Code's grammars (Shiki).
 // Each rule gets a unique probe color, so the color Shiki resolves names the winning rule under vscode-textmate's
 // own precedence. Reports per-language coverage, visible tokens that fall through to the default foreground,
-// rules that never win, and selector scopes no installed grammar emits.
+// rules that never win, selector scopes no installed grammar emits, and the color budget: how many hue families
+// compete on one line. Exits 1 on a budget breach or an invented scope, so it can gate releases.
 // Run: npm run scopes            summary
 //      npm run scopes -- -v      also list fall-through tokens per file
 //      npm run scopes -- --write also write docs/LANGUAGES.md (tested language list)
@@ -10,9 +11,16 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { createHighlighter } from 'shiki';
 import { previewFiles } from './lib/preview.mjs';
-import { ROOT, syntax } from './lib/tokens.mjs';
+import { ROOT, familyOf, syntax } from './lib/tokens.mjs';
 
 const VERBOSE = process.argv.includes('-v');
+
+// Color budget: non-neutral hue families on one line (see FAMILIES). More than this reads as a rainbow.
+const BUDGET = { p95: 3, max: 5 }; // measured baseline for 0.3.0 — only ever tighten
+// CSV is rainbow by design (one color per column).
+const BUDGET_EXEMPT = new Set(['csv']);
+// Scopes from popular third-party grammars that aren't installed here (Even Better TOML).
+const THIRD_PARTY = [/\.toml$/];
 
 const { files, skipped } = previewFiles();
 
@@ -36,13 +44,15 @@ const PLAIN = /^(source|text)\.[\w.-]+$|^meta\.|^string\.unquoted\.plain|^variab
 const hits = new Array(syntax.rules.length).fill(0);
 const byLang = {};
 const fallthrough = new Map(); // deepest scope -> { count, sample, files }
+const budget = []; // { families, where, text }
 
 for (const file of files) {
   const code = readFileSync(file.path, 'utf8');
   const { tokens } = highlighter.codeToTokens(code, { lang: file.lang, theme: 'probe', includeExplanation: true });
   const stats = (byLang[file.lang] ??= { files: [], tokens: 0, styled: 0, rules: new Set() });
   stats.files.push(file.rel);
-  for (const line of tokens)
+  tokens.forEach((line, n) => {
+    const families = new Set();
     for (const token of line) {
       if (!token.content.trim()) continue;
       const color = token.color?.toUpperCase();
@@ -52,6 +62,7 @@ for (const file of files) {
         hits[i]++;
         stats.styled++;
         stats.rules.add(i);
+        families.add(familyOf(syntax.rules[i].role));
         continue;
       }
       for (const part of token.explanation ?? []) {
@@ -65,6 +76,10 @@ for (const file of files) {
         fallthrough.set(deepest, entry);
       }
     }
+    families.delete('neutral');
+    if (!BUDGET_EXEMPT.has(file.lang) && line.some((t) => t.content.trim()))
+      budget.push({ families: families.size, where: `${file.rel}:${n + 1}`, text: line.map((t) => t.content).join('').trim() });
+  });
 }
 
 // ---- grammar scope inventory (VS Code built-ins, installed extensions, Shiki) ----
@@ -101,7 +116,8 @@ const isEmitted = (part) =>
 const unknownParts = [];
 syntax.rules.forEach(({ name, scope }) => {
   for (const selector of scope)
-    for (const part of selector.split(/\s+/)) if (!isEmitted(part)) unknownParts.push(`${name}: ${part}`);
+    for (const part of selector.split(/\s+/))
+      if (!isEmitted(part)) unknownParts.push({ line: `${name}: ${part}`, thirdParty: THIRD_PARTY.some((re) => re.test(part)) });
 });
 
 // ---- report ---------------------------------------------------------------
@@ -123,7 +139,18 @@ console.log(`\nrules that never win in the corpus: ${dead.length}`);
 for (const [name] of dead) console.log(`  ${name}`);
 
 console.log(`\nselector scopes no installed grammar emits: ${unknownParts.length}`);
-for (const line of unknownParts) console.log(`  ${line}`);
+for (const { line, thirdParty } of unknownParts) console.log(`  ${thirdParty ? '(third-party) ' : 'FAIL '}${line}`);
+
+const counts = budget.map((b) => b.families).sort((a, b) => a - b);
+const p95 = counts[Math.floor(counts.length * 0.95)];
+const max = counts.at(-1);
+const histogram = counts.reduce((h, n) => ((h[n] = (h[n] ?? 0) + 1), h), {});
+console.log(`\ncolor budget (non-neutral hue families per line, ${counts.length} lines)`);
+console.log(`  ${Object.entries(histogram).map(([n, c]) => `${n}: ${((100 * c) / counts.length).toFixed(1)}%`).join('  ')}`);
+console.log(`  ${p95 <= BUDGET.p95 ? 'ok  ' : 'FAIL'} p95 ${p95}  [≤ ${BUDGET.p95}]`);
+console.log(`  ${max <= BUDGET.max ? 'ok  ' : 'FAIL'} max ${max}  [≤ ${BUDGET.max}]`);
+for (const b of budget.filter((x) => x.families >= Math.max(BUDGET.max, max)).slice(0, 8))
+  console.log(`       ${b.families}  ${b.where}  ${b.text.slice(0, 70)}`);
 
 if (process.argv.includes('--write')) {
   const rows = Object.entries(byLang)
@@ -137,3 +164,7 @@ if (process.argv.includes('--write')) {
   );
   console.log('\nwrote docs/LANGUAGES.md');
 }
+
+const failed = p95 > BUDGET.p95 || max > BUDGET.max || unknownParts.some((u) => !u.thirdParty);
+console.log(failed ? '\nscope audit failed.' : '\nScope audit passed.');
+process.exit(failed ? 1 : 0);

@@ -4,6 +4,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CVD_TYPES, apca, composite, deltaE, hexToLch, isHex, simulateCvd } from './lib/color.mjs';
+import { SEMANTIC_MODIFIERS, SEMANTIC_TYPES } from './lib/semantic-vocab.mjs';
 import { FLAVOR_IDS, ROOT, buildTheme, semantic, syntax, themeFile } from './lib/tokens.mjs';
 
 // [role, minLc, maxLc] measured against editor background. Mist trades ~6 Lc for comfort by design.
@@ -37,6 +38,38 @@ const TEXT_GATES = [
   ['ghost', 34, 50],
 ];
 const MIST_SLACK = { fg: 6, string: 6, control: 4, comment: 2 };
+
+// High-contrast flavors replace TEXT_GATES with stricter floors: every syntax role reads at Lc 65+, comments
+// and punctuation stay readable (not receding) but remain the quietest text.
+const HC_TEXT_GATES = [
+  ['fg', 90, 108],
+  ['comment', 60, 76],
+  ['comment-doc', 62, 80],
+  ['string', 80],
+  ['control', 85],
+  ['keyword', 75],
+  ['type', 80],
+  ['type-builtin', 70],
+  ['function', 70],
+  ['method', 75],
+  ['function-builtin', 65],
+  ['variable-builtin', 70],
+  ['macro', 70],
+  ['parameter', 75],
+  ['property', 75],
+  ['constant', 75],
+  ['number', 68],
+  ['regexp', 75],
+  ['tag', 65],
+  ['attribute', 75],
+  ['namespace', 65],
+  ['operator', 65],
+  ['punctuation', 55, 75],
+  ['error', 58],
+  ['warn', 70],
+  ['info', 70],
+  ['ghost', 42, 60],
+];
 
 // [label, textRef, backgroundKeys (composited bottom -> top), minLc]
 const PAIR_GATES = [
@@ -85,7 +118,19 @@ const PAIR_GATES = [
   ['ghost text · current line', 'editorGhostText.foreground', ['editor.lineHighlightBackground'], 34],
   ['codelens', 'editorCodeLens.foreground', ['editor.background'], 30],
   ['hover · code block', 'fg', ['editorHoverWidget.codeBackground'], 72],
+  ['cursor · current line', 'editorCursor.foreground', ['editor.lineHighlightBackground'], 60],
+  ['cursor · over selection', 'editorCursor.foreground', ['editor.background', 'editor.selectionBackground'], 45],
+  ['squiggle · error', 'editorError.foreground', ['editor.background'], 50],
+  ['squiggle · warning', 'editorWarning.foreground', ['editor.background'], 50],
+  ['squiggle · info', 'editorInfo.foreground', ['editor.background'], 50],
+  ['squiggle · hint', 'editorHint.foreground', ['editor.background'], 50],
 ];
+
+// Salience: what the eye should find first. Comments and punctuation recede below every code role,
+// structure (operators) sits above punctuation, and errors are the most saturated diagnostic.
+const CODE_ROLES = ['fg', 'string', 'control', 'keyword', 'type', 'type-builtin', 'function', 'method', 'function-builtin',
+  'variable-builtin', 'macro', 'parameter', 'property', 'constant', 'number', 'regexp', 'tag', 'attribute', 'namespace'];
+const RECEDE_MARGIN = 5;
 
 // Syntax roles that sit side by side in real code must stay apart under every CVD simulation
 // (worst ΔE across normal/protan/deutan/tritan). Mist floors scale by MIST_CVD_FACTOR.
@@ -116,13 +161,14 @@ const CVD_PAIRS = [
   ['control', 'function', 'E', 7],
   ['control', 'macro', 'E', 8],
   ['control', 'keyword', 'E', 8],
+  ['error', 'warn', 'E', 12],
 ];
 // Mist deliberately trades hue separation for minimum chroma; its ΔE floors scale by this factor.
 const MIST_CVD_FACTOR = 0.65;
 
 // Editor canvas L* per flavor: Night is the deep OLED-friendly variant.
 // Light is capped at 95 to keep paper glare down.
-const CANVAS_L = { dark: [11, 18], mist: [11, 18], night: [5, 10], light: [92, 95] };
+const CANVAS_L = { dark: [11, 18], mist: [11, 18], night: [5, 10], hc: [3, 8], light: [92, 95] };
 
 // Borderless design: these surfaces must be one chrome plane, one clear step below the editor.
 const CHROME_KEYS = [
@@ -135,29 +181,18 @@ const CHROME_KEYS = [
   'statusBar.background',
 ];
 const MIN_PLANE_STEP = 2.5;
+// High-contrast flavors keep the unified planes but must draw visible borders and focus rings on top of them.
+const HC_BORDER_GATES = [
+  ['contrastBorder', 45],
+  ['contrastActiveBorder', 60],
+  ['focusBorder', 60],
+];
 
 // Night is viewed on OLED in the dark: cap identifier contrast to limit halation around glyphs.
 const FG_MAX_LC = { night: 78 };
 
 const BRACKETS = ['bracket-1', 'bracket-2', 'bracket-3', 'bracket-4', 'bracket-5', 'bracket-6'];
 
-// Semantic selectors: standard VS Code types/modifiers plus those emitted by common language servers
-// (rust-analyzer, Pylance, clangd, gopls, C#, Java). Catches typos that would silently never match.
-const SEMANTIC_TYPES = new Set([
-  'namespace', 'class', 'enum', 'interface', 'struct', 'typeParameter', 'type', 'parameter', 'variable', 'property',
-  'enumMember', 'decorator', 'event', 'function', 'method', 'macro', 'label', 'comment', 'string', 'keyword', 'number',
-  'regexp', 'operator', 'module', 'typeAlias', 'union', 'trait', 'builtinType', 'lifetime', 'selfKeyword',
-  'selfTypeKeyword', 'selfParameter', 'clsParameter', 'formatSpecifier', 'escapeSequence', 'attribute', 'derive',
-  'builtinAttribute', 'deriveHelper', 'boolean', 'builtinConstant', 'constParameter', 'unresolvedReference',
-  'character', 'generic', 'toolModule', 'concept', 'modifier', 'record', 'recordStruct', 'annotation',
-  'annotationMember', 'magicFunction', '*',
-]);
-const SEMANTIC_MODIFIERS = new Set([
-  'declaration', 'definition', 'readonly', 'static', 'deprecated', 'abstract', 'async', 'modification',
-  'documentation', 'defaultLibrary', 'controlFlow', 'mutable', 'consuming', 'unsafe', 'callable', 'constant',
-  'injected', 'intraDocLink', 'library', 'public', 'reference', 'trait', 'associated', 'crateRoot', 'builtin',
-  'typeHint', 'overridden', 'virtual', 'fileScope', 'classScope', 'functionScope', 'globalScope', 'format',
-]);
 const badSelector = (selector) => {
   const [body, lang] = selector.split(':');
   const [type, ...mods] = body.split('.');
@@ -215,14 +250,30 @@ for (const { id, theme, roles, flavor } of flavors) {
   const maxBgC = flavor.type === 'light' ? 8 : 6; // warm paper carries a little more chroma than umber
   report(bgC <= maxBgC, `large-area chroma ≤ ${maxBgC} (max C* ${bgC.toFixed(1)})`);
 
+  if (flavor.contrast === 'high')
+    for (const [key, min] of HC_BORDER_GATES) {
+      const value = lc(composite(theme.colors[key], theme.colors['sideBar.background']), theme.colors['sideBar.background']);
+      report(value >= min, `${key.padEnd(26)} visible on chrome  Lc ${fmt(value)}  [${min}+]`);
+    }
+
   // token contrast
-  for (const [role, min, max = 108] of TEXT_GATES) {
+  for (const [role, min, max = 108] of flavor.contrast === 'high' ? HC_TEXT_GATES : TEXT_GATES) {
     const value = lc(roles[role], bg);
     const lo = min - (slack[role] ?? 0);
     const hi = max - (slack[role] ?? 0) * (role === 'fg' ? 1 : 0);
     report(value >= lo && value <= hi, `${role.padEnd(17)} ${roles[role]}  Lc ${fmt(value)}  [${lo}${max < 108 ? `–${hi}` : '+'}]`);
   }
   report(lc(roles.control, bg) > lc(roles.keyword, bg), 'control flow outranks other keywords');
+  report(lc(roles.control, bg) >= lc(roles.keyword, bg) + 5, `control flow ≥ keywords + 5 Lc (${fmt(lc(roles.control, bg) - lc(roles.keyword, bg))})`);
+  const quietestCode = Math.min(...CODE_ROLES.map((r) => lc(roles[r], bg)));
+  for (const r of ['comment', 'punctuation'])
+    report(lc(roles[r], bg) <= quietestCode - RECEDE_MARGIN, `${r} recedes ≥${RECEDE_MARGIN} Lc below every code role (${fmt(quietestCode - lc(roles[r], bg))})`);
+  report(lc(roles.operator, bg) >= lc(roles.punctuation, bg), 'operators read above punctuation');
+  const diagC = (r) => hexToLch(roles[r]).C;
+  report(diagC('error') >= Math.max(diagC('warn'), diagC('info')), `error is the most saturated diagnostic (C* ${diagC('error').toFixed(0)} vs ${diagC('warn').toFixed(0)}/${diagC('info').toFixed(0)})`);
+  const cursorOnBg = (key) => composite(theme.colors[key], bg);
+  report(deltaE(cursorOnBg('editorMultiCursor.primary.foreground'), cursorOnBg('editorMultiCursor.secondary.foreground')) >= 8,
+    'secondary cursors are distinguishable from the primary');
   report(lc(roles.punctuation, bg) < lc(roles.fg, bg) - 15, 'punctuation stays ≥15 Lc under identifiers');
   report(deltaE(roles.ghost, roles.comment) >= 8, `ghost text ≠ comment (ΔE ${deltaE(roles.ghost, roles.comment).toFixed(1)})`);
   report(deltaE(roles.ghost, roles.inlay) >= 6, `ghost text ≠ inlay hint (ΔE ${deltaE(roles.ghost, roles.inlay).toFixed(1)})`);

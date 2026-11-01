@@ -17,6 +17,7 @@ L\*, C\*, h° are CIELAB LCh (D65). Lc is APCA (SAPC 0.0.98G) of the role as tex
 | overlay | `#403B36` | 25.2 | 4.0 | 74 | 0.0 |
 | border | `#363230` | 21.1 | 2.3 | 55 | 0.0 |
 | border-strong | `#4A443E` | 29.3 | 4.7 | 74 | -7.8 |
+| contrast-border | `#363230` | 21.1 | 2.3 | 55 | 0.0 |
 | guide | `#383431` | 22.0 | 2.8 | 66 | 0.0 |
 | guide-active | `#5E574E` | 37.4 | 6.4 | 80 | -14.9 |
 | whitespace | `#4A443E` | 29.3 | 4.7 | 74 | -7.8 |
@@ -112,6 +113,7 @@ L\*, C\*, h° are CIELAB LCh (D65). Lc is APCA (SAPC 0.0.98G) of the role as tex
 | overlay | `#302C28` | 18.3 | 3.4 | 74 | 0.0 |
 | border | `#252220` | 13.5 | 2.1 | 63 | 0.0 |
 | border-strong | `#38332F` | 21.6 | 3.6 | 68 | 0.0 |
+| contrast-border | `#252220` | 13.5 | 2.1 | 63 | 0.0 |
 | guide | `#282522` | 14.9 | 2.6 | 74 | 0.0 |
 | guide-active | `#4E4840` | 30.9 | 5.8 | 81 | -10.8 |
 | whitespace | `#3A3531` | 22.5 | 3.6 | 68 | 0.0 |
@@ -207,6 +209,7 @@ L\*, C\*, h° are CIELAB LCh (D65). Lc is APCA (SAPC 0.0.98G) of the role as tex
 | overlay | `#433F3B` | 26.9 | 3.2 | 74 | 0.0 |
 | border | `#3A3734` | 23.3 | 2.4 | 74 | 0.0 |
 | border-strong | `#4C4843` | 30.8 | 3.7 | 80 | -8.3 |
+| contrast-border | `#3A3734` | 23.3 | 2.4 | 74 | 0.0 |
 | guide | `#3C3936` | 24.2 | 2.4 | 74 | 0.0 |
 | guide-active | `#5C5650` | 36.9 | 4.5 | 74 | -13.7 |
 | whitespace | `#484441` | 29.1 | 2.6 | 66 | 0.0 |
@@ -248,7 +251,7 @@ L\*, C\*, h° are CIELAB LCh (D65). Lc is APCA (SAPC 0.0.98G) of the role as tex
 | accent-fg | `#211F1D` | 11.9 | 1.8 | — | 0.0 |
 | info | `#8FB8EE` | 73.7 | 31.2 | 269 | -59.4 |
 | hint | `#9FC8C0` | 77.6 | 15.2 | 182 | -65.3 |
-| warn | `#DEBE94` | 78.8 | 26.0 | 78 | -67.2 |
+| warn | `#EABB76` | 78.7 | 42.1 | 78 | -67.1 |
 | error | `#F48A7E` | 68.7 | 45.9 | 32 | -52.1 |
 | git-add | `#ACD9A4` | 82.4 | 32.6 | 139 | -73.2 |
 | success | `#ACD9A4` | 82.4 | 32.6 | 139 | -73.2 |
@@ -289,6 +292,102 @@ L\*, C\*, h° are CIELAB LCh (D65). Lc is APCA (SAPC 0.0.98G) of the role as tex
 | ansi-bright-cyan | `#B4D6CF` | 83.1 | 12.6 | 181 | -74.3 |
 | ansi-bright-white | `#ECE7E0` | 91.8 | 4.0 | 83 | -89.5 |
 
+## Godhuli High Contrast
+
+| Role | Hex | L* | C* | h° | Lc vs bg |
+|---|---|---:|---:|---:|---:|
+| bg-deep | `#050404` | 1.2 | 0.3 | — | 0.0 |
+| bg-dim | `#080706` | 2.0 | 0.5 | — | 0.0 |
+| bg | `#121110` | 5.1 | 0.7 | — | — |
+| bg-line | `#1E1C1A` | 10.4 | 1.8 | — | 0.0 |
+| elevated | `#1A1816` | 8.4 | 1.8 | — | 0.0 |
+| surface | `#262320` | 13.9 | 2.6 | 74 | 0.0 |
+| overlay | `#36322D` | 21.0 | 3.9 | 79 | 0.0 |
+| border | `#3A3530` | 22.5 | 4.1 | 74 | 0.0 |
+| border-strong | `#5A534B` | 35.7 | 5.9 | 77 | -15.2 |
+| contrast-border | `#A39A8E` | 64.0 | 7.6 | 81 | -47.8 |
+| guide | `#3A3631` | 22.9 | 3.8 | 79 | 0.0 |
+| guide-active | `#7A7166` | 48.1 | 7.5 | 79 | -27.9 |
+| whitespace | `#5A534B` | 35.7 | 5.9 | 77 | -15.2 |
+| shadow | `#000000` | 0.0 | 0.0 | — | 0.0 |
+| fg-subtle | `#A99F93` | 66.0 | 7.7 | 79 | -50.6 |
+| fg-dim | `#BFB8AD` | 75.1 | 6.5 | 85 | -64.0 |
+| fg-muted | `#DDD3C5` | 85.0 | 8.2 | 82 | -80.1 |
+| fg | `#F5EDE0` | 94.0 | 7.3 | 86 | -96.1 |
+| fg-bright | `#FDF6EA` | 97.1 | 6.6 | 87 | -101.9 |
+| comment | `#BCB3A4` | 73.3 | 8.8 | 86 | -61.2 |
+| comment-doc | `#CBC0AC` | 78.1 | 11.5 | 87 | -68.7 |
+| keyword | `#DED4FF` | 86.9 | 22.9 | 300 | -83.4 |
+| control | `#FFE4FF` | 93.4 | 16.9 | 325 | -95.0 |
+| type | `#9EEFDF` | 89.1 | 28.1 | 180 | -87.3 |
+| type-builtin | `#E7FDF7` | 97.6 | 8.3 | 177 | -102.8 |
+| namespace | `#B0CCC9` | 80.0 | 10.1 | 190 | -71.8 |
+| function | `#7FCEFF` | 79.5 | 33.4 | 250 | -71.2 |
+| method | `#A4E7FF` | 88.1 | 23.8 | 230 | -85.6 |
+| function-builtin | `#ACC4D5` | 77.9 | 12.1 | 248 | -68.4 |
+| macro | `#FFB6CD` | 81.4 | 29.7 | 358 | -74.1 |
+| variable | `#F5EDE0` | 94.0 | 7.3 | 86 | -96.1 |
+| variable-builtin | `#EBF2F5` | 95.1 | 2.9 | 232 | -98.0 |
+| parameter | `#F4D9B4` | 88.0 | 22.0 | 80 | -85.4 |
+| type-param | `#F4D9B4` | 88.0 | 22.0 | 80 | -85.4 |
+| property | `#BCD5E6` | 84.0 | 12.1 | 247 | -78.4 |
+| constant | `#FFD48B` | 87.1 | 42.1 | 82 | -83.8 |
+| number | `#FFB496` | 79.7 | 35.3 | 48 | -71.4 |
+| string | `#DEE5A3` | 89.0 | 34.0 | 112 | -87.1 |
+| accent | `#FAB97F` | 79.9 | 42.0 | 66 | -71.8 |
+| string-interp | `#FAB97F` | 79.9 | 42.0 | 66 | -71.8 |
+| regexp | `#A4E3B3` | 85.0 | 34.1 | 150 | -80.3 |
+| tag | `#FFADA1` | 78.3 | 34.0 | 33 | -69.2 |
+| attribute | `#EBD1A4` | 85.0 | 25.8 | 84 | -80.1 |
+| operator | `#B5C6D0` | 78.9 | 7.9 | 242 | -70.0 |
+| punctuation | `#A3B0B7` | 71.0 | 6.0 | 239 | -57.9 |
+| heading | `#FAB97F` | 79.9 | 42.0 | 66 | -71.8 |
+| link | `#7FCEFF` | 79.5 | 33.4 | 250 | -71.2 |
+| inline-code | `#FFD48B` | 87.1 | 42.1 | 82 | -83.8 |
+| accent-fg | `#080706` | 2.0 | 0.5 | — | 0.0 |
+| info | `#97D5FF` | 82.6 | 28.3 | 251 | -76.2 |
+| hint | `#9EEFDF` | 89.1 | 28.1 | 180 | -87.3 |
+| warn | `#FFD48B` | 87.1 | 42.1 | 82 | -83.8 |
+| error | `#FF948D` | 72.5 | 44.8 | 28 | -60.3 |
+| git-add | `#BBE9B1` | 88.0 | 33.7 | 138 | -85.3 |
+| success | `#BBE9B1` | 88.0 | 33.7 | 138 | -85.3 |
+| debug | `#FFB582` | 79.6 | 42.3 | 60 | -71.3 |
+| git-mod | `#97D5FF` | 82.6 | 28.3 | 251 | -76.2 |
+| git-del | `#FF908A` | 71.6 | 46.5 | 28 | -59.0 |
+| git-conflict | `#DFBFFF` | 81.9 | 35.8 | 310 | -75.0 |
+| git-untracked | `#D2EABF` | 90.0 | 24.0 | 130 | -88.9 |
+| git-ignored | `#938A7F` | 58.0 | 7.2 | 79 | -39.7 |
+| git-renamed | `#9EEFDF` | 89.1 | 28.1 | 180 | -87.3 |
+| selection | `#6E86A6` | 55.2 | 19.8 | 268 | -36.3 |
+| find | `#FFD48B` | 87.1 | 42.1 | 82 | -83.8 |
+| find-current | `#FAB97F` | 79.9 | 42.0 | 66 | -71.8 |
+| cursor | `#FFDC9C` | 89.3 | 36.1 | 84 | -87.7 |
+| ghost | `#8F9DAC` | 64.1 | 9.6 | 260 | -47.9 |
+| inlay | `#9BBCBB` | 73.9 | 11.7 | 196 | -62.2 |
+| inlay-bg | `#262320` | 13.9 | 2.6 | 74 | 0.0 |
+| bracket-1 | `#E6CFA5` | 84.1 | 23.9 | 86 | -78.5 |
+| bracket-2 | `#AAC9EF` | 79.9 | 22.2 | 265 | -71.7 |
+| bracket-3 | `#D9B6DC` | 78.1 | 23.9 | 323 | -68.8 |
+| bracket-4 | `#ABDBD0` | 83.9 | 17.8 | 179 | -78.3 |
+| bracket-5 | `#EEB49F` | 78.1 | 26.3 | 46 | -68.8 |
+| bracket-6 | `#D5DBAC` | 85.9 | 24.5 | 114 | -81.7 |
+| ansi-black | `#2A2724` | 15.9 | 2.6 | 74 | 0.0 |
+| ansi-red | `#E5847A` | 65.4 | 42.1 | 31 | -50.0 |
+| ansi-green | `#A8C893` | 77.1 | 30.8 | 131 | -67.2 |
+| ansi-yellow | `#E6BA78` | 78.1 | 40.1 | 79 | -68.8 |
+| ansi-blue | `#92B9EC` | 74.1 | 29.6 | 269 | -62.5 |
+| ansi-magenta | `#C8AEEC` | 75.2 | 34.8 | 308 | -64.2 |
+| ansi-cyan | `#86C9BD` | 76.4 | 23.8 | 182 | -66.1 |
+| ansi-white | `#C6BEB1` | 77.3 | 7.6 | 86 | -67.4 |
+| ansi-bright-black | `#7F766A` | 50.1 | 8.0 | 81 | -30.1 |
+| ansi-bright-red | `#E8968C` | 70.1 | 34.7 | 31 | -56.6 |
+| ansi-bright-green | `#BEDAA9` | 83.9 | 27.8 | 131 | -78.4 |
+| ansi-bright-yellow | `#E8C48A` | 81.0 | 34.2 | 82 | -73.5 |
+| ansi-bright-blue | `#A6C4EC` | 78.3 | 23.1 | 267 | -69.0 |
+| ansi-bright-magenta | `#D8C2F4` | 81.7 | 27.7 | 308 | -74.6 |
+| ansi-bright-cyan | `#A2DACF` | 83.1 | 20.2 | 181 | -77.0 |
+| ansi-bright-white | `#FDF6EA` | 97.1 | 6.6 | 87 | -101.9 |
+
 ## Godhuli Light
 
 | Role | Hex | L* | C* | h° | Lc vs bg |
@@ -302,6 +401,7 @@ L\*, C\*, h° are CIELAB LCh (D65). Lc is APCA (SAPC 0.0.98G) of the role as tex
 | overlay | `#D8D0C2` | 83.8 | 7.9 | 87 | 14.7 |
 | border | `#DCD4C6` | 85.2 | 7.9 | 87 | 12.4 |
 | border-strong | `#CBC1B2` | 78.5 | 8.9 | 84 | 22.9 |
+| contrast-border | `#DCD4C6` | 85.2 | 7.9 | 87 | 12.4 |
 | guide | `#DFD8CB` | 86.6 | 7.3 | 89 | 10.2 |
 | guide-active | `#BDB2A2` | 73.1 | 9.7 | 83 | 31.0 |
 | whitespace | `#CFC6B7` | 80.2 | 8.7 | 86 | 20.3 |
@@ -343,7 +443,7 @@ L\*, C\*, h° are CIELAB LCh (D65). Lc is APCA (SAPC 0.0.98G) of the role as tex
 | accent-fg | `#FAF7F1` | 97.3 | 3.2 | 91 | 0.0 |
 | info | `#3168A9` | 43.4 | 40.4 | 276 | 68.4 |
 | hint | `#19695F` | 39.8 | 26.0 | 183 | 72.1 |
-| warn | `#956009` | 45.3 | 53.2 | 73 | 66.2 |
+| warn | `#A6791D` | 53.9 | 53.8 | 80 | 56.4 |
 | error | `#B7372D` | 42.8 | 62.0 | 35 | 68.2 |
 | git-add | `#5C9A50` | 58.0 | 47.8 | 137 | 51.4 |
 | success | `#5C9A50` | 58.0 | 47.8 | 137 | 51.4 |

@@ -83,6 +83,12 @@
         "label": "Godhuli Light",
         "uiTheme": "vs",
         "path": "./themes/godhuli-light.json"
+      },
+      {
+        "id": "Godhuli High Contrast",
+        "label": "Godhuli High Contrast",
+        "uiTheme": "hc-black",
+        "path": "./themes/godhuli-hc.json"
       }
     ]
   },
@@ -91,7 +97,8 @@
     "check": "node scripts/check.mjs",
     "docs": "node scripts/check.mjs --docs",
     "scopes": "node scripts/scopes.mjs",
-    "vscode:prepublish": "bun run build && bun run check",
+    "semantic": "node scripts/semantic.mjs",
+    "vscode:prepublish": "bun run build && bun run check && bun run scopes",
     "package": "npx @vscode/vsce package",
     "publish:vscode": "npx @vscode/vsce publish",
     "publish:ovsx": "npx ovsx publish",

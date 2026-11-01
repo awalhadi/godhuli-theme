@@ -14,6 +14,17 @@ export const syntax = load('syntax.json');
 
 export const FLAVOR_IDS = Object.keys(palette.flavors);
 
+// Hue families: the design's semantic groups. Roles not listed are neutral (ink, slate, sand, comment gray).
+// Used by the color-budget audit (how many families compete on one line) and the README role table.
+export const FAMILIES = {
+  violet: ['keyword', 'control'],
+  blue: ['function', 'method', 'function-builtin', 'link', 'info'],
+  teal: ['type', 'type-builtin', 'namespace', 'hint'],
+  green: ['string', 'regexp', 'git-add'],
+  ember: ['constant', 'number', 'macro', 'tag', 'attribute', 'accent', 'heading', 'string-interp', 'inline-code', 'warn', 'error', 'git-del'],
+};
+export const familyOf = (role) => Object.keys(FAMILIES).find((f) => FAMILIES[f].includes(role)) ?? 'neutral';
+
 // Raw (unaliased) role map for a flavor, applying `extends` + `chroma` (minus `keepChroma`) recursively.
 function rawRoles(id) {
   const flavor = palette.flavors[id];
@@ -46,9 +57,10 @@ export function resolveRoles(id) {
   return resolved;
 }
 
-// "role" | "role@AA" | "transparent" | "opacity@AA" | { dark, light }
-export function resolveRef(ref, roles, type) {
-  if (typeof ref === 'object') return resolveRef(ref[type], roles, type);
+// "role" | "role@AA" | "transparent" | "opacity@AA" | { dark, light, hc? } — `hc` applies to high-contrast flavors,
+// which otherwise use their polarity key.
+export function resolveRef(ref, roles, flavor) {
+  if (typeof ref === 'object') return resolveRef((flavor.contrast === 'high' && ref.hc) || ref[flavor.type], roles, flavor);
   if (ref === 'transparent') return '#00000000';
   const [role, alpha] = ref.split('@');
   if (alpha !== undefined && !/^[0-9a-f]{2}$/i.test(alpha)) throw new Error(`Bad alpha in "${ref}"`);
@@ -63,7 +75,7 @@ const entries = (obj) => Object.entries(obj).filter(([key]) => !key.startsWith('
 export function buildTheme(id) {
   const flavor = palette.flavors[id];
   const roles = resolveRoles(id);
-  const ref = (value) => resolveRef(value, roles, flavor.type);
+  const ref = (value) => resolveRef(value, roles, flavor);
 
   const colors = {};
   for (const [, group] of entries(workbench)) {
@@ -92,7 +104,7 @@ export function buildTheme(id) {
     theme: {
       $schema: 'vscode://schemas/color-theme',
       name: flavor.name,
-      type: flavor.type,
+      type: flavor.contrast === 'high' ? 'hcDark' : flavor.type,
       semanticHighlighting: true,
       colors,
       semanticTokenColors,

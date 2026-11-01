@@ -1,0 +1,15 @@
+{
+  "name": "godhuli-semantic-probe",
+  "displayName": "Godhuli semantic probe (dev tool)",
+  "description": "Dumps the semantic tokens real language servers emit for preview files. Launched by `npm run semantic`; never shipped.",
+  "publisher": "godhuli-dev",
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "main": "./extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ]
+}

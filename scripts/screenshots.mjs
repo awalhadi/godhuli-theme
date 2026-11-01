@@ -2,7 +2,7 @@
 // Code is highlighted by Shiki (VS Code's TextMate grammars) with our themes; the window chrome is an
 // HTML mockup painted with each theme's own `colors`. Headless Chrome captures the PNGs.
 // Run: npm run screenshots   (needs Google Chrome/Chromium; override with CHROME_PATH)
-//      npm run screenshots -- --audit [dir]   one 4-flavor sheet per preview/ file, for visual review (not shipped)
+//      npm run screenshots -- --audit [dir] [--only text]   one all-flavor sheet per preview/ file (not shipped)
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -24,6 +24,7 @@ const SHOTS = [
   { out: 'night.png', flavor: 'night', file: 'preview.rs', lang: 'rust', from: 8, lines: 28, cursor: 9 },
   { out: 'mist.png', flavor: 'mist', file: 'preview.py', lang: 'python', from: 17, lines: 28, cursor: 13 },
   { out: 'light.png', flavor: 'light', file: 'php/laravel/OrderController.php', lang: 'php', from: 13, lines: 28, cursor: 10 },
+  { out: 'high-contrast.png', flavor: 'hc', file: 'php/laravel/orders.blade.php', lang: 'blade', from: 13, lines: 28, cursor: 11 },
 ];
 const GRID = { out: 'flavors.png', file: 'preview.tsx', lang: 'tsx', from: 29, lines: 15 };
 
@@ -144,6 +145,11 @@ const TREES = {
     ['d', 2, 'Requests'], ['f', 3, 'StoreOrderRequest.php', 'U'], ['d', 1, 'Models'], ['f', 2, 'Order.php', 'M'],
     ['d', 0, 'resources'], ['f', 1, 'orders.blade.php'], ['f', 0, 'composer.json'], ['f', 0, '.env', 'I'],
   ] },
+  blade: { root: 'GODHULI-SHOP', crumbs: ['resources', 'views', 'orders'], items: [
+    ['d', 0, 'app'], ['d', 1, 'Http'], ['f', 2, 'OrderController.php', 'M'], ['d', 1, 'Models'], ['f', 2, 'Order.php'],
+    ['d', 0, 'resources'], ['d', 1, 'views'], ['d', 2, 'orders'], ['f', 3, 'orders.blade.php', '', true],
+    ['f', 3, 'show.blade.php', 'U'], ['d', 2, 'components'], ['f', 0, 'composer.json'], ['f', 0, '.env', 'I'],
+  ] },
   python: { root: 'PARCEL', crumbs: ['parcel'], items: [
     ['d', 0, 'parcel'], ['f', 1, '__init__.py'], ['f', 1, 'shipment.py', '', true], ['f', 1, 'manifest.py', 'M'],
     ['f', 1, 'dispatch.py'], ['d', 0, 'tests'], ['f', 1, 'test_shipment.py', 'U'], ['f', 0, 'pyproject.toml', 'M'],
@@ -172,7 +178,7 @@ function sidebarHtml(tree, c, roles) {
 
 function terminalHtml(roles, lang) {
   const a = (n) => roles[`ansi-${n}`];
-  const cmd = { tsx: 'npm test', rust: 'cargo test', python: 'pytest -q', php: 'php artisan test' }[lang];
+  const cmd = { tsx: 'npm test', rust: 'cargo test', python: 'pytest -q', php: 'php artisan test', blade: 'php artisan test' }[lang];
   return `
     <div><span style="color:${a('green')}">➜</span> <span style="color:${a('cyan')}">~/code/project</span> <span style="color:${a('blue')}">git:(</span><span style="color:${a('red')}">main</span><span style="color:${a('blue')}">)</span> ${cmd}</div>
     <div><span style="color:${a('green')}">✓</span> parses valid entries <span style="color:${a('bright-black')}">(3 ms)</span></div>
@@ -199,7 +205,7 @@ function workbench(theme, roles, rows, shot) {
   const base = TREES[shot.lang];
   const tree = shot.title ? { ...base, items: base.items.map((i) => (i[4] ? [i[0], i[1], shot.title, i[3], true] : i)) } : base;
   const fileName = tree.items.find((i) => i[4])[2];
-  const langLabel = { tsx: 'TypeScript JSX', rust: 'Rust', python: 'Python', php: 'PHP' }[shot.lang];
+  const langLabel = { tsx: 'TypeScript JSX', rust: 'Rust', python: 'Python', php: 'PHP', blade: 'Blade' }[shot.lang];
   const tabs = [[fileName, true], ...tree.items.filter((i) => i[0] === 'f' && !i[4]).slice(0, 2).map((i) => [i[2], false])];
   const tabHtml = tabs.map(([name, active], i) => `
     <div class="tab" style="background:${active ? c['tab.activeBackground'] : c['tab.inactiveBackground']};color:${active ? c['tab.activeForeground'] : c['tab.inactiveForeground']};${active ? `box-shadow: inset 0 1px ${c['tab.activeBorderTop']}` : ''}">
@@ -345,8 +351,8 @@ function auditHtml(cards, rel, lines) {
   </style></head><body>${cards.map(card).join('')}</body></html>`;
 }
 
-async function audit(dir) {
-  const { files } = previewFiles();
+async function audit(dir, only) {
+  const files = previewFiles().files.filter((f) => !only || f.rel.includes(only));
   const themes = FLAVOR_IDS.map((id) => buildTheme(id));
   const hl = await createHighlighter({ themes: themes.map((t) => t.theme), langs: [...new Set(files.map((f) => f.lang))] });
   mkdirSync(dir, { recursive: true });
@@ -354,7 +360,8 @@ async function audit(dir) {
     const code = readFileSync(file.path, 'utf8');
     const cards = themes.map((t) => ({ ...t, rows: hl.codeToTokens(code, { lang: file.lang, theme: t.theme.name }).tokens.slice(0, AUDIT_LINES) }));
     const lines = Math.max(...cards.map((card) => card.rows.length));
-    capture(auditHtml(cards, file.rel, lines), `${file.rel.replace(/[\\/]/g, '__')}.png`, 1800, 2 * (lines * LINE_H + 40) + 4, 1, dir);
+    const rows = Math.ceil(cards.length / 2);
+    capture(auditHtml(cards, file.rel, lines), `${file.rel.replace(/[\\/]/g, '__')}.png`, 1800, rows * (lines * LINE_H + 40) + 4 * rows, 1, dir);
   }
 }
 
@@ -382,7 +389,8 @@ const auditAt = process.argv.indexOf('--audit');
 if (auditAt !== -1) {
   const arg = process.argv[auditAt + 1];
   try {
-    await audit(arg && !arg.startsWith('-') ? arg : join(tmpdir(), 'godhuli-audit'));
+    const onlyAt = process.argv.indexOf('--only');
+    await audit(arg && !arg.startsWith('-') ? arg : join(tmpdir(), 'godhuli-audit'), onlyAt === -1 ? null : process.argv[onlyAt + 1]);
   } finally {
     rmSync(WORK, { recursive: true, force: true });
   }
@@ -392,7 +400,7 @@ if (auditAt !== -1) {
 const flavors = Object.fromEntries(FLAVOR_IDS.map((id) => [id, buildTheme(id)]));
 const highlighter = await createHighlighter({
   themes: Object.values(flavors).map(({ theme }) => theme),
-  langs: ['tsx', 'rust', 'python', 'php'],
+  langs: ['tsx', 'rust', 'python', 'php', 'blade'],
 });
 
 mkdirSync(OUT, { recursive: true });

@@ -6,7 +6,7 @@
 [![Open VSX](https://img.shields.io/open-vsx/v/NotifyX/godhuli-theme?label=Open%20VSX)](https://open-vsx.org/extension/NotifyX/godhuli-theme)
 [![License: MIT](https://img.shields.io/badge/license-MIT-E9AC72)](LICENSE)
 
-**A warm, calm VS Code theme for long days of code.** Godhuli comes in four flavors: a warm **dark theme**, a deep **OLED night theme**, a soft low-contrast **Mist**, and a paper-like **light theme**. Every color has one job. Types, calls, values, control flow and comments each have their own role, so you can read the structure of code at a glance without a rainbow on screen.
+**A warm, calm VS Code theme for long days of code.** Godhuli comes in five flavors: a warm **dark theme**, a deep **OLED night theme**, a soft low-contrast **Mist**, a paper-like **light theme**, and an accessible **High Contrast** theme. Every color has one job. Types, calls, values, control flow and comments each have their own role, so you can read the structure of code at a glance without a rainbow on screen.
 
 ![Godhuli Dark theme in VS Code: a React TypeScript component with suggest widget, warm umber background and borderless UI](images/hero-dark.png)
 
@@ -20,8 +20,9 @@
 - **Tested for color-vision deficiency.** Key pairs such as added vs. deleted, errors vs. successes, types vs. strings and functions vs. keywords are checked under protanopia, deuteranopia and tritanopia simulations. Critical states differ in brightness, and use squiggles and icons, not hue alone.
 - **Measured, not guessed.** Every color is contrast-checked with APCA, a candidate contrast method for WCAG 3. That includes when selections, search matches, diff highlights and widgets sit underneath.
 - **A borderless, modern workbench.** The sidebar, tabs, panel and status bar share one calm surface, one step below the editor.
+- **No rainbow lines.** A release gate measures how many color families compete on each line of 129 real samples. 95% of lines use three or fewer.
 
-## Four flavors
+## Flavors
 
 ![All four Godhuli flavors side by side: Dark, Night (OLED), Mist (low contrast) and Light (warm paper)](images/flavors.png)
 
@@ -31,8 +32,9 @@
 | **Godhuli Night** | OLED screens and dark rooms. A deeper canvas with softened text to limit glow | `#161413` near-black |
 | **Godhuli Mist** | Very long sessions. The lowest color and softest contrast that stays readable | `#282624` muted gray |
 | **Godhuli Light** | Daylight and bright offices. Warm, low-glare paper that isn't yellow | `#F3EEE4` warm paper |
+| **Godhuli High Contrast** | Low vision, glare, projectors and screen sharing. Every token at APCA Lc 65+, with visible borders and focus rings | `#121110` deep umber |
 
-All four share the same semantic role system, so switching flavors never changes what a color means.
+All five share the same semantic role system, so switching flavors never changes what a color means.
 
 ### Godhuli Night: OLED dark theme
 
@@ -45,6 +47,10 @@ All four share the same semantic role system, so switching flavors never changes
 ### Godhuli Light: warm paper light theme
 
 ![Godhuli Light warm paper light theme in VS Code showing a Laravel controller in PHP](images/light.png)
+
+### Godhuli High Contrast: accessible, still warm
+
+![Godhuli High Contrast theme in VS Code showing a Laravel Blade view with Alpine.js attributes](images/high-contrast.png)
 
 ## Install
 
@@ -114,25 +120,48 @@ Godhuli never changes your font or editor settings. If you'd like the look in th
 
 Install the font you want first ([JetBrains Mono](https://www.jetbrains.com/lp/mono/), [Fira Code](https://github.com/tonsky/FiraCode) or [Cascadia Code](https://github.com/microsoft/cascadia-code)); VS Code falls back to the next font in the list. If you don't like ligatures (`=>` drawn as ⇒), set `"editor.fontLigatures": false`.
 
+**Extra comfort settings**, if you want a calmer editor:
+
+```jsonc
+{
+  "editor.cursorBlinking": "phase",              // fades instead of flashing
+  "editor.cursorSmoothCaretAnimation": "on",     // the caret glides, so your eye can follow it
+  "editor.renderLineHighlight": "all",           // current line marked in the gutter and the text
+  "editor.letterSpacing": 0.3,                   // a little air between glyphs at small sizes
+  "terminal.integrated.fontFamily": "'JetBrains Mono', monospace",
+  "terminal.integrated.lineHeight": 1.2
+}
+```
+
+**Which flavor when?**
+- **Dark** for everyday work.
+- **Mist** late at night or after a long day.
+- **Night** on OLED screens in a dark room.
+- **Light** in daylight.
+- **High Contrast** when sharing your screen, presenting, or whenever text feels hard to read.
+
 ## Accessibility & contrast
 
 Each syntax role has its own contrast target, rather than one number for everything. Comments should recede, identifiers should read effortlessly, and punctuation should stay out of the way.
 
-| Role (APCA Lc vs editor background) | Dark | Night | Mist | Light | Target |
-|---|---:|---:|---:|---:|---|
-| Identifiers | 79.9 | 76.1 | 74.8 | 85.2 | 75–92 (Mist 69+, Night ≤ 78) |
-| Strings | 71.1 | 72.7 | 70.3 | 72.4 | ≥ 70 |
-| Control flow | 73.4 | 75.0 | 72.6 | 78.5 | above keywords |
-| Types | 66.3 | 67.9 | 65.3 | 72.1 | ≥ 60 |
-| Functions | 63.6 | 65.2 | 62.6 | 74.0 | ≥ 60 |
-| Keywords | 59.9 | 61.5 | 59.0 | 69.9 | ≥ 58 |
-| Comments | 48.5 | 48.0 | 47.8 | 51.1 | 45–60, readable and receding |
-| Punctuation | 44.7 | 46.3 | 45.9 | 55.3 | quiet, ≥ 15 below identifiers |
+| Role (APCA Lc vs editor background) | Dark | Night | Mist | Light | High Contrast | Target (HC target) |
+|---|---:|---:|---:|---:|---:|---|
+| Identifiers | 79.9 | 76.1 | 74.8 | 85.2 | 96.1 | 75–92, Mist 69+, Night ≤ 78 (90+) |
+| Strings | 71.1 | 72.7 | 70.3 | 72.4 | 87.1 | ≥ 70 (80+) |
+| Control flow | 73.4 | 75.0 | 72.6 | 78.5 | 95.0 | ≥ keywords + 5 (85+) |
+| Types | 66.3 | 67.9 | 65.3 | 72.1 | 87.3 | ≥ 60 (80+) |
+| Functions | 63.6 | 65.2 | 62.6 | 74.0 | 71.2 | ≥ 60 (70+) |
+| Keywords | 59.9 | 61.5 | 59.0 | 69.9 | 83.4 | ≥ 58 (75+) |
+| Comments | 48.5 | 48.0 | 47.8 | 51.1 | 61.2 | 45–60 and ≥ 5 below every code color (60–76) |
+| Punctuation | 44.7 | 46.3 | 45.9 | 55.3 | 57.9 | quiet, ≥ 15 below identifiers (55–75) |
 
 - **Checked where it matters.** Text contrast is also verified on top of selections, inactive selections, find matches, word highlights, diff lines, merge conflicts, sticky scroll, peek views, suggestion and hover widgets, inlay hints and tabs.
 - **Neighbors stay apart.** Tokens that sit side by side are checked to stay distinguishable under every color-vision simulation. Examples: punctuation vs. comments, functions vs. methods, decorators vs. regexes, types vs. built-in types, and variables vs. parameters and properties.
 - **Distinct assistance text.** Ghost text (AI suggestions) is cool gray and upright, comments are warm and italic, and inlay hints are teal-gray chips, so you never mistake one for another.
 - **Low color on large areas.** Backgrounds stay nearly neutral (C\* ≤ 6, paper ≤ 8). Only errors, debugging and the ember accent use strong color.
+- **Clear priority.** The colors follow the order your eye should find things in. Errors are the most saturated diagnostic, and control flow sits above other keywords. Operators read above punctuation, while comments and punctuation recede below every code color.
+- **Always find the cursor.** The caret keeps strong contrast on the current line and over selections. Secondary cursors are distinguishable from the primary one, and error, warning, info and hint squiggles each stay readable. Errors and warnings stay distinct under every color-vision simulation, because their squiggles have the same shape.
+- **Verified with real language servers.** Semantic colors are checked against the tokens that TypeScript, Intelephense (PHP), Pylance (Python), rust-analyzer and Volar (Vue) actually emit.
 
 No theme can promise to prevent eye strain. Godhuli is designed for comfortable, long sessions, and its contrast is measured rather than guessed. Full per-role values (hex, L\*, C\*, hue, contrast) for every flavor are in [docs/PALETTE.md](docs/PALETTE.md).
 
@@ -161,17 +190,20 @@ tokens/workbench.json  VS Code UI colors → roles
 tokens/semantic.json   semantic tokens → roles
 tokens/syntax.json     TextMate scopes → roles (one owner per scope)
 scripts/build.mjs      generates themes/*.json
-scripts/check.mjs      quality gate: APCA contrast, composited overlays, CVD separation, rule hygiene, freshness
-scripts/scopes.mjs     scope audit: which rule wins for every token in preview/, using VS Code's grammars
-scripts/screenshots.mjs  Marketplace images, plus --audit sheets of every sample in all four flavors
+scripts/check.mjs      quality gate: APCA contrast, composited overlays, CVD separation, salience, cursor &
+                       diagnostics, high-contrast profile, rule hygiene, freshness
+scripts/scopes.mjs     scope audit + color budget: which rule wins for every token in preview/, using VS Code's grammars
+scripts/semantic.mjs   semantic audit: tokens real language servers emit, resolved against tokens/semantic.json
+scripts/screenshots.mjs  Marketplace images, plus --audit sheets of every sample in every flavor
 ```
 
 ```sh
 npm install
-npm run build        # tokens → themes
+npm run build        # tokens → themes (5 flavors)
 npm run check        # must print "All checks passed."
+npm run scopes       # TextMate coverage + color budget; must print "Scope audit passed."
 npm run docs         # regenerate docs/PALETTE.md
-npm run scopes       # audit TextMate coverage (add -- --write to refresh docs/LANGUAGES.md)
+npm run semantic     # optional: needs the `code` CLI and your language extensions; opens a temporary VS Code window
 npm run screenshots  # regenerate images/ (needs Chrome/Chromium; set CHROME_PATH if not on PATH)
 ```
 

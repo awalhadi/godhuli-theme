@@ -2,6 +2,46 @@
 
 ## 0.3.0 — 2026-11-01
 
+**New theme.** Existing theme ids are unchanged.
+- **Godhuli High Contrast** (`hc-black`): for low vision, glare, projectors and screen sharing.
+  - Every syntax role reads at APCA Lc 65+ (identifiers 96, control flow 95, strings 87). Comments stay readable at 61 but remain the quietest text.
+  - Visible borders and focus rings, a deep umber canvas (not `#000`), and stronger selection, find and diff overlays.
+  - Error/warning underline borders add a cue beyond color.
+  - Same hue families and the same CVD-separation gates as every other flavor.
+
+**Semantic highlighting, verified against real language servers.** The new `npm run semantic` dumps the tokens that TypeScript, Intelephense, Pylance, rust-analyzer and Volar actually emit and resolves them with VS Code's own selector scoring. It found and fixed:
+- **TS/JS constants:** `ALL_CAPS` module constants lost their amber color under semantic highlighting. `variable.readonly` is now constant, while `const` locals stay plain.
+- **Python:**
+  - `self`/`cls` declarations rendered as sand parameters (`parameter.declaration` outscored `selfParameter`).
+  - Built-ins (`str`, `dict`, `len`, `__name__`) used user colors, because Pylance marks them `builtin`, not `defaultLibrary`.
+  - Decorators (`@dataclass`, `@property`) turned blue instead of macro rose.
+  - String escapes lost their color.
+  - Dunder methods fell back to plain functions.
+- **PHP:** heredoc interpolation braces (which Intelephense marks `decorator`) now use the interpolation accent.
+- **Rust:**
+  - Associated `const`s are constant.
+  - `unsafe` uses the warning style.
+  - `*.mutable` bindings get rust-analyzer's underline convention.
+- **Composable styles:** semantic styles now use composable boolean flags instead of `fontStyle` strings, which silently switched off underline/strikethrough from other modifiers.
+
+**Comfort & focus gates.** All existing gates are unchanged.
+- **Color budget** (`npm run scopes`): counts the non-neutral hue families per line across 7,186 lines of real code. The baseline gate is p95 ≤ 3 and max ≤ 5, and 84% of lines use two or fewer. `scopes` now exits non-zero on a budget breach or invented scope and runs in `vscode:prepublish`.
+- **Salience:**
+  - Comments and punctuation recede ≥ 5 Lc below every code color.
+  - Control flow ≥ keywords + 5.
+  - Operators sit above punctuation.
+  - Error is the most saturated diagnostic.
+- **Cursor & diagnostics:**
+  - The caret is legible on the current line (≥ 60) and over selections (≥ 45), and secondary cursors are distinct.
+  - Error/warning/info/hint squiggles are ≥ 50.
+  - Error vs warning stay distinct under every CVD simulation; this fixed Mist (8.3 → 15.8) and Light (10.4 → 14.7).
+- **High-contrast profile:** stricter text floors and visible-border gates.
+
+**Docs & tooling.**
+- **README:** High Contrast section, a "which flavor when" guide, optional comfort settings (cursor animation, letter spacing, terminal font), and a contrast table with an HC column.
+- **New image:** `images/high-contrast.png` (Laravel Blade + Alpine).
+- **Audit sheets:** `npm run screenshots -- --audit` now covers all five flavors and takes `--only <path>`.
+
 **Syntax colors.** These are role-based refinements; the dusk identity is unchanged.
 - **Punctuation:** now a quiet cool slate, so commas and braces no longer look like comment text (ΔE vs comments 2.8 → 15).
 - **Regular expressions:** moved from pink to jade, so they no longer collide with decorators and macros (they were indistinguishable under CVD simulation).
