@@ -180,34 +180,6 @@ Yes. Use `workbench.colorCustomizations` and `editor.tokenColorCustomizations` s
 
 Ratings and reviews help other developers find Godhuli. If the theme makes your evenings easier, please [rate it on the Marketplace](https://marketplace.visualstudio.com/items?itemName=NotifyX.godhuli-theme&ssr=false#review-details). Found a token that looks wrong? [Open an issue](https://github.com/awalhadi/godhuli-theme/issues) with a screenshot and the language.
 
-## Development
-
-All colors come from design tokens. Never edit `themes/*.json` by hand.
-
-```
-tokens/palette.json    the only place hex is written: per-flavor roles
-tokens/workbench.json  VS Code UI colors → roles
-tokens/semantic.json   semantic tokens → roles
-tokens/syntax.json     TextMate scopes → roles (one owner per scope)
-scripts/build.mjs      generates themes/*.json
-scripts/check.mjs      quality gate: APCA contrast, composited overlays, CVD separation, salience, cursor &
-                       diagnostics, high-contrast profile, rule hygiene, freshness
-scripts/scopes.mjs     scope audit + color budget: which rule wins for every token in preview/, using VS Code's grammars
-scripts/semantic.mjs   semantic audit: tokens real language servers emit, resolved against tokens/semantic.json
-scripts/screenshots.mjs  Marketplace images, plus --audit sheets of every sample in every flavor
-```
-
-```sh
-npm install
-npm run build        # tokens → themes (5 flavors)
-npm run check        # must print "All checks passed."
-npm run scopes       # TextMate coverage + color budget; must print "Scope audit passed."
-npm run docs         # regenerate docs/PALETTE.md
-npm run semantic     # optional: needs the `code` CLI and your language extensions; opens a temporary VS Code window
-npm run screenshots  # regenerate images/ (needs Chrome/Chromium; set CHROME_PATH if not on PATH)
-```
-
-To preview, press <kbd>F5</kbd> in VS Code to open an Extension Development Host with the sample files in `preview/`. When you add a language, add a realistic sample to `preview/`, then add rules only for scopes that `npm run scopes` shows the grammar actually emits. Publishing steps are in [PUBLISHING.md](PUBLISHING.md).
 
 ## License
 
