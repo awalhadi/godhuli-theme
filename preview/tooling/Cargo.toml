@@ -1,0 +1,60 @@
+# Godhuli Shop — native order processing service
+[package]
+name = "godhuli-orders"
+version = "2.4.1"
+edition = "2021"
+rust-version = "1.80"
+authors = ["Godhuli Team <dev@godhuli.shop>"]
+description = "High-throughput order ingestion for Godhuli Shop"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/godhuli/shop"
+keywords = ["ecommerce", "orders", "grpc"]
+publish = false
+
+[package.metadata.release]
+cutoff = 2026-10-28T00:00:00Z
+freeze-date = 2026-11-15
+
+[dependencies]
+tokio = { version = "1.41", features = ["rt-multi-thread", "macros", "signal"] }
+axum = "0.7.7"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1"
+sqlx = { version = "0.8", default-features = false, features = ["postgres", "runtime-tokio", "uuid", "chrono"] }
+rust_decimal = { version = "1.36", optional = true }
+tonic = { version = "0.12", optional = true }
+tracing = "0.1"
+godhuli-core = { path = "../core", version = "=2.4.1" }
+receipt-printer = { git = "https://github.com/godhuli/receipt-printer", tag = "v0.3.0" }
+
+[dev-dependencies]
+proptest = "1.5"
+insta = { version = "1.40", features = ["json"] }
+
+[features]
+default = ["decimal"]
+decimal = ["dep:rust_decimal"]
+grpc = ["dep:tonic"]
+full = ["decimal", "grpc"]
+
+[[bin]]
+name = "orders-api"
+path = "src/bin/api.rs"
+
+[[bin]]
+name = "orders-import"
+path = "src/bin/import.rs"
+required-features = ["decimal"]
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+strip = true
+panic = 'abort'
+
+[profile.dev.package."*"]
+opt-level = 1
+
+[workspace.lints.rust]
+unsafe_code = "forbid"

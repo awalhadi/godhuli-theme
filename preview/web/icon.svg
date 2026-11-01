@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Godhuli Goods app icon: a dusk sun over a shopping bag -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Godhuli Goods</title>
+  <desc id="desc">An amber sun setting behind a stylised shopping bag.</desc>
+
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2b2118"/>
+      <stop offset="55%" stop-color="#7c2d12"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.9"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="50%" cy="50%" r="50%" fx="45%" fy="40%">
+      <stop offset="0" stop-color="#fde68a"/>
+      <stop offset="1" stop-color="#d97706"/>
+    </radialGradient>
+    <clipPath id="rounded">
+      <rect width="128" height="128" rx="28" ry="28"/>
+    </clipPath>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <symbol id="handle" viewBox="0 0 24 12">
+      <path d="M2 12 C2 4, 22 4, 22 12" fill="none" stroke="currentColor" stroke-width="2.5"/>
+    </symbol>
+  </defs>
+
+  <style>
+    .bag { fill: #fff7ed; stroke: #2b2118; stroke-width: 2; stroke-linejoin: round; }
+    .ray { stroke: #fbbf24; stroke-linecap: round; opacity: .7; }
+  </style>
+
+  <g clip-path="url(#rounded)">
+    <rect width="128" height="128" fill="url(#sky)"/>
+    <circle cx="64" cy="70" r="30" fill="url(#sun)" filter="url(#glow)"/>
+    <g class="ray" stroke-width="3" transform="rotate(-15 64 70)">
+      <line x1="64" y1="22" x2="64" y2="32"/>
+      <line x1="22" y1="70" x2="30" y2="70"/>
+      <line x1="98" y1="70" x2="106" y2="70"/>
+    </g>
+    <path class="bag" d="M40 64 h48 l-4 46 a6 6 0 0 1 -6 5.5 h-28 a6 6 0 0 1 -6 -5.5 z"/>
+    <use xlink:href="#handle" x="50" y="50" width="28" height="14" color="#2b2118"/>
+    <text x="64" y="100" text-anchor="middle" font-family="Fraunces, serif" font-size="18"
+          fill="#7c2d12">G</text>
+  </g>
+</svg>

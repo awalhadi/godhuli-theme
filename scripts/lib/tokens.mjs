@@ -73,12 +73,13 @@ export function buildTheme(id) {
     }
   }
 
+  // A style without `role` keeps the token's own color (e.g. strike through deprecated symbols only).
   const semanticTokenColors = Object.fromEntries(
-    entries(semantic).map(([selector, value]) =>
-      typeof value === 'string'
-        ? [selector, ref(value)]
-        : [selector, { foreground: ref(value.role), fontStyle: value.fontStyle }],
-    ),
+    entries(semantic).map(([selector, value]) => {
+      if (typeof value === 'string') return [selector, ref(value)];
+      const { role, ...style } = value;
+      return [selector, { ...(role && { foreground: ref(role) }), ...style }];
+    }),
   );
 
   const tokenColors = syntax.rules.map(({ name, scope, role, fontStyle }) => ({

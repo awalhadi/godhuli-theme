@@ -1,0 +1,55 @@
+import { Callout, Tabs, Tab } from "@/components/docs";
+import OrderTimeline from "../components/OrderTimeline";
+import { formatMoney } from "@godhuli/shop/utils";
+
+export const meta = {
+  title: "Handling refunds",
+  section: "Guides",
+  order: 4,
+  updated: "2026-10-28",
+};
+
+export const sampleOrder = { id: 10012, total: 1540, currency: "BDT" };
+
+# {meta.title}
+
+Refunds in **Godhuli Shop** move an order from `paid` to `refunded`. This guide
+walks through the API and the dashboard flow.
+
+<Callout type="info" title="Before you start">
+  You need the `orders:write` scope. Ask an admin if the **Refund** button is
+  greyed out.
+</Callout>
+
+## Order lifecycle
+
+<OrderTimeline steps={["pending", "paid", "shipped", "refunded"]} highlight={3} />
+
+The sample order totals {formatMoney(sampleOrder.total, sampleOrder.currency)},
+and has {sampleOrder.total > 1000 ? "high" : "normal"} refund priority.
+
+## Issuing a refund
+
+<Tabs defaultValue="api">
+  <Tab value="api" label="API">
+
+```ts
+await shop.orders.refund(10012, { amount: 1540, reason: "damaged_item" });
+```
+
+  </Tab>
+  <Tab value="dashboard" label="Dashboard">
+    1. Open **Orders** → *#10012*
+    2. Click **Refund** and confirm
+  </Tab>
+</Tabs>
+
+<Callout type="warning">
+  Partial refunds are not yet supported. Track progress in{" "}
+  <a href="https://github.com/godhuli/shop/issues/218">issue #218</a>.
+</Callout>
+
+{/* TODO: add a section on webhook events once refund.updated ships */}
+
+- [ ] Verify the customer's identity
+- [x] Restock returned items

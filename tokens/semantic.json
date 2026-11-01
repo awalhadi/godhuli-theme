@@ -1,5 +1,5 @@
 {
-  "$comment": "semanticTokenColors: selector -> role, or { role, fontStyle }. fontStyle may be '' to clear inherited styles.",
+  "$comment": "semanticTokenColors: selector -> role, or { role?, fontStyle? | bold/italic/underline/strikethrough }. Omit role to keep the token color; fontStyle '' clears inherited styles. Mirrors syntax.json: interfaces/traits italic, declarations bold, generics use type-param.",
 
   "namespace": "namespace",
   "module": "namespace",
@@ -10,8 +10,8 @@
   "class": "type",
   "class.declaration": { "role": "type", "fontStyle": "bold" },
   "class.defaultLibrary": "type-builtin",
-  "interface": "type",
-  "interface.declaration": { "role": "type", "fontStyle": "bold" },
+  "interface": { "role": "type", "fontStyle": "italic" },
+  "interface.declaration": { "role": "type", "fontStyle": "bold italic" },
   "interface.defaultLibrary": "type-builtin",
   "enum": "type",
   "enum.declaration": { "role": "type", "fontStyle": "bold" },
@@ -20,10 +20,10 @@
   "union": "type",
   "typeAlias": "type",
   "typeAlias.declaration": { "role": "type", "fontStyle": "bold" },
-  "typeParameter": "type",
+  "typeParameter": { "role": "type-param", "fontStyle": "" },
   "builtinType": "type-builtin",
-  "trait": "type",
-  "trait.declaration": { "role": "type", "fontStyle": "bold" },
+  "trait": { "role": "type", "fontStyle": "italic" },
+  "trait.declaration": { "role": "type", "fontStyle": "bold italic" },
 
   "function": "function",
   "function.defaultLibrary": "function-builtin",
@@ -34,6 +34,7 @@
   "decorator": "macro",
   "attribute": "macro",
   "derive": "macro",
+  "builtinAttribute": "macro",
 
   "variable": "variable",
   "variable.defaultLibrary": "variable-builtin",
@@ -43,11 +44,13 @@
   "parameter.declaration": { "role": "parameter", "fontStyle": "italic" },
   "selfKeyword": { "role": "keyword", "fontStyle": "italic" },
   "selfParameter": { "role": "keyword", "fontStyle": "italic" },
+  "clsParameter": { "role": "keyword", "fontStyle": "italic" },
   "selfTypeKeyword": "type",
   "property": "property",
   "property.defaultLibrary": "variable-builtin",
   "property.static": { "role": "property", "fontStyle": "italic" },
   "enumMember": "constant",
+  "constParameter": "constant",
   "event": "macro",
   "label": "constant",
   "lifetime": { "role": "keyword", "fontStyle": "italic" },
@@ -56,6 +59,7 @@
   "keyword.controlFlow": "control",
   "modifier": { "role": "keyword", "fontStyle": "italic" },
   "operator": "operator",
+  "operator.controlFlow": "control",
   "comment": { "role": "comment", "fontStyle": "italic" },
   "comment.documentation": { "role": "comment-doc", "fontStyle": "italic" },
   "string": "string",
@@ -66,6 +70,6 @@
   "builtinConstant": "number",
   "regexp": "regexp",
 
-  "*.deprecated": { "role": "fg-muted", "fontStyle": "strikethrough" },
+  "*.deprecated": { "strikethrough": true },
   "unresolvedReference": { "role": "error", "fontStyle": "underline" }
 }

@@ -1,0 +1,67 @@
+// Godhuli Shop data model
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "relationJoins"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  REFUNDED
+}
+
+enum Role {
+  CUSTOMER
+  STAFF
+  ADMIN
+}
+
+/// A registered shopper or staff member
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      Role     @default(CUSTOMER)
+  isActive  Boolean  @default(true) @map("is_active")
+  orders    Order[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Order {
+  id         Int         @id @default(autoincrement())
+  status     OrderStatus @default(PENDING)
+  totalCents Int         @map("total_cents")
+  currency   String      @default("BDT") @db.Char(3)
+  metadata   Json?
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String      @map("user_id")
+  items      LineItem[]
+  placedAt   DateTime    @default(now()) @map("placed_at")
+
+  @@index([userId, status])
+  @@index([placedAt(sort: Desc)])
+  @@map("orders")
+}
+
+model LineItem {
+  id        Int     @id @default(autoincrement())
+  sku       String  @db.VarChar(32)
+  quantity  Int     @default(1)
+  unitPrice Decimal @db.Decimal(10, 2) @map("unit_price")
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   Int     @map("order_id")
+
+  @@unique([orderId, sku])
+  @@map("line_items")
+}

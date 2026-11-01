@@ -1,0 +1,47 @@
+{{!-- Order summary card. Context: { order, customer, showActions } --}}
+{{!-- TODO: move currency formatting into a registered "money" helper everywhere --}}
+<article class="order-card{{#if order.isGift}} order-card--gift{{/if}}" data-id="{{order.id}}">
+  {{> card-header title=(concat "Order #" order.number) status=order.status}}
+
+  <p class="meta">
+    Placed {{formatDate order.placedAt "MMM d, yyyy"}}
+    {{#unless order.placedAt}}<em>(draft)</em>{{/unless}}
+    by {{customer.firstName}} {{customer.lastName}}
+  </p>
+
+  {{#if order.lines.length}}
+    <ul class="lines">
+      {{#each order.lines as |line index|}}
+        <li class="{{#if @first}}first{{/if}} {{#if @last}}last{{/if}}" data-index="{{index}}">
+          <span class="qty">{{line.quantity}} &times;</span>
+          {{line.name}}
+          {{#with line.variant}}
+            <small>({{color}}, {{size}})</small>
+          {{/with}}
+          <span class="price">{{money line.unitPrice currency=../order.currency}}</span>
+        </li>
+      {{/each}}
+    </ul>
+  {{else}}
+    <p class="empty">This order has no items.</p>
+  {{/if}}
+
+  {{!-- Notes are sanitised server-side, so render them unescaped --}}
+  {{{order.notesHtml}}}
+
+  <footer>
+    <strong>Total: {{money order.total currency=order.currency}}</strong>
+    {{#if (and showActions (eq order.status "pending"))}}
+      <form method="post" action="/orders/{{order.id}}/cancel">
+        <input type="hidden" name="_csrf" value="{{@root.csrfToken}}">
+        <button type="submit" class="btn btn-danger">{{t "orders.cancel"}}</button>
+      </form>
+    {{else if (eq order.status "shipped")}}
+      <a href="{{order.trackingUrl}}" target="_blank" rel="noopener">Track package &rarr;</a>
+    {{/if}}
+  </footer>
+
+  {{#> card-footer-layout align="end"}}
+    {{#each order.tags}}<span class="tag">#{{this}}</span>{{/each}}
+  {{/card-footer-layout}}
+</article>

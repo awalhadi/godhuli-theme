@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Track your Godhuli Goods order &amp; delivery status">
+  <meta property="og:title" content="Order tracking">
+  <title>Track your order &middot; Godhuli Goods</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    :root { --accent: #d97706; }
+    .status[data-state="shipped"]::before { content: "\1F69A\00a0"; }
+    .visually-hidden { position: absolute !important; clip: rect(0 0 0 0); }
+  </style>
+</head>
+<body>
+  <!-- Site header; nav links are injected by the CMS -->
+  <header class="site-header">
+    <a href="/" class="logo" aria-label="Home">Godhuli&nbsp;Goods</a>
+  </header>
+
+  <main id="content">
+    <h1>Where&rsquo;s my order?</h1>
+
+    <form id="track" action="/api/track" method="post" novalidate data-endpoint="/api/track">
+      <fieldset>
+        <legend>Order details</legend>
+        <label for="order">Order number</label>
+        <input id="order" name="order" type="text" required pattern="ORD-\d{8}-\d{5}"
+               placeholder="ORD-20260101-00042" autocomplete="off">
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required>
+
+        <label><input type="checkbox" name="sms" value="1" checked> Text me updates</label>
+      </fieldset>
+      <button type="submit" class="btn btn-primary" disabled>Track &rarr;</button>
+    </form>
+
+    <output id="result" class="status" data-state="idle" aria-live="polite" hidden></output>
+  </main>
+
+  <footer>&copy; 2026 Godhuli Goods &bull; <a href="mailto:help@example.com">Contact</a></footer>
+
+  <script type="module">
+    // TODO: show carrier ETA when the tracking API returns it
+    const form = document.querySelector('#track');
+    const out = document.getElementById('result');
+    const ORDER_RE = /^ORD-\d{8}-\d{5}$/;
+
+    form.addEventListener('input', () => {
+      form.querySelector('button').disabled = !ORDER_RE.test(form.order.value.trim());
+    });
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const body = Object.fromEntries(new FormData(form));
+      const res = await fetch(form.dataset.endpoint, { method: 'POST', body: JSON.stringify(body) });
+      const { status = 'unknown', eta = null } = await res.json();
+      out.hidden = false;
+      out.dataset.state = status;
+      out.textContent = `Status: ${status}${eta ? ` — arriving ${eta}` : ''}`;
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+# Godhuli Shop — local development stack
+name: godhuli-shop
+
+x-defaults: &defaults
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options: { max-size: "10m", max-file: "3" }
+  networks: [backend]
+
+x-app-env: &app-env
+  NODE_ENV: development
+  DATABASE_URL: postgres://shop:${POSTGRES_PASSWORD:-shop}@db:5432/shop
+  REDIS_URL: redis://cache:6379/0
+  FEATURE_GIFT_MESSAGES: "true"
+
+services:
+  api:
+    <<: *defaults
+    build:
+      context: .
+      dockerfile: tooling/Dockerfile
+      target: runtime
+      args:
+        NODE_VERSION: 22.11.0
+    image: ghcr.io/godhuli/shop-api:dev
+    ports:
+      - "8080:8080"
+    environment:
+      <<: *app-env
+      PORT: 8080
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_started
+    networks: [backend, frontend]
+
+  worker:
+    <<: *defaults
+    image: ghcr.io/godhuli/shop-api:dev
+    command: ["node", "dist/worker.js", "--concurrency", "4"]
+    environment: *app-env
+    deploy:
+      replicas: 2
+
+  db:
+    <<: *defaults
+    image: postgres:16.4-alpine
+    environment:
+      POSTGRES_USER: shop
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-shop}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./data/reports.sql:/docker-entrypoint-initdb.d/01-reports.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shop -d shop"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  cache:
+    <<: *defaults
+    image: redis:7.4-alpine
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+
+  seed:
+    image: postgres:16.4-alpine
+    profiles: ["tools"]
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      echo "Seeding orders..."
+      psql "$$DATABASE_URL" -c "\copy orders FROM '/seed/orders.csv' CSV HEADER"
+      echo "Done."
+    environment: *app-env
+    volumes: ["./data:/seed:ro"]
+    networks: [backend]
+
+volumes:
+  pgdata: {}
+
+networks:
+  backend:
+    driver: bridge
+  frontend:

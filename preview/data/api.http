@@ -1,0 +1,60 @@
+# Godhuli Shop REST API — VS Code REST Client
+@host = https://api.godhuli.shop
+@version = v1
+@token = {{$dotenv GODHULI_API_TOKEN}}
+@contentType = application/json
+
+### List recent orders
+GET {{host}}/api/{{version}}/orders?status=paid&limit=25&sort=-placedAt HTTP/1.1
+Authorization: Bearer {{token}}
+Accept: {{contentType}}
+
+### Get a single order
+# @name getOrder
+GET {{host}}/api/{{version}}/orders/10016
+Authorization: Bearer {{token}}
+
+### Create an order
+# @name createOrder
+POST {{host}}/api/{{version}}/orders HTTP/1.1
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+Idempotency-Key: {{$guid}}
+X-Request-Time: {{$timestamp}}
+
+{
+  "customerId": "usr_9KQ2",
+  "currency": "BDT",
+  "isGift": true,
+  "giftMessage": "Shubho Jonmodin! ✨",
+  "items": [
+    { "sku": "TEA-DARJ-250G", "quantity": 2, "unitPrice": 649.5 },
+    { "sku": "MUG-CLAY-01", "quantity": 1, "unitPrice": 1200 }
+  ],
+  "shipping": {
+    "method": "express",
+    "address": { "line1": "House 12, Road 4", "city": "Dhaka", "postcode": "1209" }
+  },
+  "couponCode": null
+}
+
+### Update order status using the id from createOrder
+PATCH {{host}}/api/{{version}}/orders/{{createOrder.response.body.$.id}}
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "status": "shipped",
+  "trackingNumber": "GDH-2026-000481"
+}
+
+### Cancel (form-encoded)
+POST {{host}}/api/{{version}}/orders/10012/cancel
+Authorization: Bearer {{token}}
+Content-Type: application/x-www-form-urlencoded
+
+reason=customer_request&notify=true
+
+### Delete a draft order
+DELETE {{host}}/api/{{version}}/orders/drafts/77 HTTP/1.1
+Authorization: Bearer {{token}}

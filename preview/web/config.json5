@@ -1,0 +1,44 @@
+// Storefront runtime configuration (JSON5)
+// FIXME: move secrets out of this file before the next audit
+{
+  name: 'godhuli-storefront',
+  environment: "production",
+  version: '2.4.1',
+  debug: false,
+
+  server: {
+    host: '0.0.0.0',
+    port: 8080,
+    maxBodyBytes: 0x100000, // 1 MiB
+    timeoutMs: 15e3,
+    trustProxy: true,
+  },
+
+  /* Checkout settings */
+  checkout: {
+    currency: 'USD',
+    taxRate: .075,
+    freeShippingThreshold: 75.00,
+    allowedCountries: ['US', 'CA', 'BD', 'DE',],
+    couponPattern: '^[A-Z0-9]{4,12}$',
+    guestCheckout: true,
+    retry: { attempts: 3, backoff: +1.5, jitter: null },
+  },
+
+  theme: {
+    accent: '#d97706',
+    accentRgb: 0xD97706,
+    radius: 12,
+    fonts: { body: 'Inter', display: 'Fraunces' },
+  },
+
+  features: {
+    'new-search': true,
+    recommendations: { enabled: true, limit: 8, model: 'collab-v3' },
+    loyalty: Infinity,
+    giftWrap: NaN, // TODO: decide pricing
+  },
+
+  banner: 'Free shipping on orders over $75 \
+— this week only!',
+}

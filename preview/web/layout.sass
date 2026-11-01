@@ -1,0 +1,60 @@
+@use "sass:math"
+@use "sass:map"
+
+// Checkout layout in indented syntax
+// TODO: switch the sidebar to a container query
+
+$sidebar-width: 22rem
+$gap: 1.5rem
+$header-height: 64px
+$z: (header: 100, overlay: 200, toast: 300)
+
+=stack($space: $gap)
+  display: flex
+  flex-direction: column
+  gap: $space
+
+=above($bp)
+  @media (min-width: $bp)
+    @content
+
+%visually-hidden
+  position: absolute !important
+  width: 1px
+  height: 1px
+  overflow: hidden
+
+.checkout
+  +stack(math.div($gap, 2))
+  min-height: calc(100vh - #{$header-height})
+  padding: $gap
+
+  +above(64em)
+    display: grid
+    grid-template-columns: 1fr $sidebar-width
+    grid-template-areas: "form summary"
+
+  &__form
+    grid-area: form
+
+    label
+      @extend %visually-hidden
+
+  &__summary
+    grid-area: summary
+    position: sticky
+    top: $header-height + 16px
+    z-index: map.get($z, header) - 1
+
+    .line
+      display: flex
+      justify-content: space-between
+      &:last-child
+        font-weight: 700
+        border-top: 1px dashed rgba(#2b2118, .2)
+
+@each $state, $color in (error: #b91c1c, ok: #15803d)
+  .field--#{$state}
+    border-color: $color
+    @if $state == error
+      animation: shake .3s 2

@@ -1,0 +1,90 @@
+"""
+Orders service schema.
+TODO: deprecate `Order.totalCents` in favour of `Order.total` (Money).
+"""
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+directive @auth(requires: Role = CUSTOMER) on OBJECT | FIELD_DEFINITION
+directive @cost(weight: Int!) on FIELD_DEFINITION
+
+scalar DateTime
+scalar Email @specifiedBy(url: "https://html.spec.whatwg.org/#valid-e-mail-address")
+
+enum Role {
+  CUSTOMER
+  STAFF
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  "Cancelled by the customer or by staff"
+  CANCELLED
+}
+
+interface Node {
+  id: ID!
+}
+
+type Money {
+  amount: Float!
+  currency: String!
+}
+
+"A placed order. Visible to its customer and to staff."
+type Order implements Node @auth {
+  id: ID!
+  number: String!
+  status: OrderStatus!
+  total: Money!
+  totalCents: Int! @deprecated(reason: "Use `total` instead.")
+  lines(first: Int = 20, after: String): [OrderLine!]!
+  customer: Customer
+  placedAt: DateTime
+}
+
+type OrderLine {
+  sku: String!
+  quantity: Int!
+  unitPrice: Money!
+}
+
+type Customer implements Node {
+  id: ID!
+  email: Email! @auth(requires: STAFF)
+  orders(status: [OrderStatus!], first: Int = 10): [Order!]! @cost(weight: 5)
+}
+
+union SearchResult = Order | Customer
+
+input OrderLineInput {
+  sku: String!
+  quantity: Int! = 1
+}
+
+input PlaceOrderInput {
+  lines: [OrderLineInput!]!
+  couponCode: String
+  isGift: Boolean = false
+}
+
+type Query {
+  node(id: ID!): Node
+  order(number: String!): Order
+  search(term: String!, limit: Int = 10): [SearchResult!]! @auth(requires: STAFF)
+}
+
+type Mutation {
+  placeOrder(input: PlaceOrderInput!): Order!
+  cancelOrder(id: ID!, reason: String): Order @auth
+}
+
+type Subscription {
+  orderStatusChanged(id: ID!): Order!
+}

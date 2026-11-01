@@ -1,0 +1,56 @@
+//- Order confirmation email
+//- TODO: inline these styles with juice before sending
+extends layouts/email
+
+include mixins/buttons
+
+block variables
+  - const money = (cents) => `$${(cents / 100).toFixed(2)}`
+  - const hasDiscount = order.discountCents > 0
+  - var supportEmail = 'support@example.com'
+
+mixin lineItem(line, idx)
+  tr(class={ odd: idx % 2 === 1, 'is-gift': line.gift })
+    td.qty= line.quantity + ' ×'
+    td.name
+      | #{line.name}
+      if line.variant
+        small  (#{line.variant})
+    td.price(align="right")= money(line.unitCents * line.quantity)
+
+block content
+  h1.title Thanks for your order, #{customer.firstName}!
+  p.lead
+    | Order
+    strong  ##{order.number}
+    |  was placed on #{new Date(order.placedAt).toLocaleDateString('en-US')}.
+
+  table.lines(width="100%" cellpadding="0" cellspacing="0" role="presentation")
+    each line, i in order.lines
+      +lineItem(line, i)
+    else
+      tr: td(colspan="3") No items found.
+
+  table.totals(width="100%")
+    tr
+      td Subtotal
+      td(align="right")= money(order.subtotalCents)
+    if hasDiscount
+      tr.discount
+        td Discount (#{order.couponCode || 'promo'})
+        td(align="right") −#{money(order.discountCents)}
+    tr.grand
+      td: strong Total
+      td(align="right"): strong= money(order.totalCents)
+
+  case order.shippingMethod
+    when 'express'
+      p.notice Your order ships today via express delivery.
+    when 'pickup'
+      p.notice Ready for pickup in 2&ndash;3 business days.
+    default
+      p.notice We'll email tracking details once it ships.
+
+  +button(`https://shop.example.com/orders/${order.id}`, 'View your order')
+
+  p.footer!= `Questions? Email <a href="mailto:${supportEmail}">${supportEmail}</a>.`

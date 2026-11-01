@@ -1,0 +1,57 @@
+// Legacy admin stylesheet (Bootstrap 3 era)
+// TODO: delete once the new admin ships
+
+@import (reference) "bootstrap/less/variables.less";
+
+@brand: #d97706;
+@brand-dark: darken(@brand, 12%);
+@gutter: 15px;
+@radius: 4px;
+@columns: 12;
+@font-stack: "Helvetica Neue", Arial, sans-serif;
+@selector-prefix: ~"admin";
+
+/* Mixins */
+.rounded(@r: @radius) {
+  border-radius: @r;
+  -webkit-border-radius: @r;
+}
+
+.button-variant(@bg; @fg: #fff) when (lightness(@bg) >= 60%) {
+  background-color: @bg;
+  color: #222;
+}
+.button-variant(@bg; @fg: #fff) when (lightness(@bg) < 60%) {
+  background-color: @bg;
+  color: @fg;
+  &:hover { background-color: lighten(@bg, 8%); }
+}
+
+.make-columns(@n, @i: 1) when (@i =< @n) {
+  .col-@{i} { width: percentage((@i / @n)); }
+  .make-columns(@n, (@i + 1));
+}
+
+.@{selector-prefix}-panel {
+  .rounded(@radius * 2);
+  padding: @gutter (@gutter * 1.5);
+  font-family: @font-stack;
+  border: 1px solid fade(@brand, 30%);
+
+  .btn-primary { .button-variant(@brand); }
+  .btn-light { .button-variant(#f5f5f5); }
+
+  &.is-collapsed {
+    max-height: 0 !important;
+    overflow: hidden;
+  }
+
+  @media (max-width: (@screen-sm-min - 1)) {
+    padding: (@gutter / 2);
+  }
+}
+
+.make-columns(@columns);
+
+@min-width: unit(320 * 1.5, px);
+.@{selector-prefix}-shell { min-width: @min-width; color: contrast(@brand-dark); }

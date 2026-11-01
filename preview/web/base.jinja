@@ -1,0 +1,65 @@
+{# Base layout for the order admin. Child templates override `content`. #}
+{% from "macros/forms.jinja" import field, csrf %}
+{% set nav_items = [
+  ("orders.index", "Orders", "receipt"),
+  ("products.index", "Products", "box"),
+  ("customers.index", "Customers", "users"),
+] %}
+
+{% macro status_badge(status, size="sm") -%}
+  {%- set colors = {"pending": "amber", "paid": "green", "shipped": "blue"} -%}
+  <span class="badge badge-{{ size }} badge-{{ colors.get(status, 'gray') }}">
+    {{- status | replace("_", " ") | title -}}
+  </span>
+{%- endmacro %}
+
+<!doctype html>
+<html lang="{{ request.locale | default('en') }}">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Dashboard{% endblock %} &middot; {{ config.SHOP_NAME }}</title>
+  {% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}?v={{ version }}">
+  {% endblock %}
+</head>
+<body class="{{ 'is-staff' if current_user.is_staff else 'is-customer' }}">
+  <nav>
+    <ul>
+      {% for endpoint, label, icon in nav_items %}
+        <li{% if request.endpoint == endpoint %} class="active"{% endif %}>
+          <a href="{{ url_for(endpoint) }}"><i class="icon-{{ icon }}"></i> {{ label }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages if category != "debug" %}
+      <div class="flash flash-{{ category }}" role="alert">{{ message | e }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <main>
+    {% block content %}
+      <h1>Recent orders</h1>
+      <table>
+        {% for order in (orders | sort(attribute="placed_at", reverse=true))[:10] %}
+          <tr class="{{ loop.cycle('odd', 'even') }}">
+            <td>#{{ order.number }}</td>
+            <td>{{ status_badge(order.status) }}</td>
+            <td>{{ "%.2f" | format(order.total_cents / 100) }} {{ order.currency | upper }}</td>
+            <td>{{ order.notes | default("—", true) | truncate(40) }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="4">No orders in the last {{ days or 30 }} days.</td></tr>
+        {% endfor %}
+      </table>
+      {# FIXME: pagination macro breaks when `total` is None #}
+    {% endblock %}
+  </main>
+
+  {% block scripts %}
+    <script>window.APP = {{ {"user": current_user.id, "debug": false} | tojson }};</script>
+  {% endblock %}
+</body>
+</html>

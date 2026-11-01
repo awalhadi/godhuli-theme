@@ -1,0 +1,30 @@
+2026-10-31T08:00:00.012Z INFO  [main] godhuli.shop.Application - Starting Godhuli Shop v2.4.1 (pid=48213, env=production)
+2026-10-31T08:00:00.418Z INFO  [main] godhuli.db.Pool - Connected to postgres://orders-db.internal:5432/shop (pool size 20)
+2026-10-31T08:00:00.733Z DEBUG [main] godhuli.cache.Redis - PING redis://cache.internal:6379/0 -> PONG in 1.42ms
+2026-10-31T08:00:01.005Z INFO  [main] godhuli.http.Server - Listening on http://0.0.0.0:8080
+2026-10-31T08:02:17.251Z INFO  [http-7] godhuli.http.Access - GET /api/v1/orders?page=2&limit=50 200 38ms request_id=7f3c2a1e-9b4d-4c8e-a0f2-5d6e7f8a9b0c
+2026-10-31T08:02:18.902Z INFO  [http-3] godhuli.http.Access - POST /api/v1/orders 201 112ms request_id=1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d user=usr_9KQ2
+2026-10-31T08:02:19.004Z DEBUG [worker-1] godhuli.queue.Consumer - Received message order.created {"orderId":10016,"totalCents":249900,"gift":false}
+2026-10-31T08:03:44.517Z WARN  [http-5] godhuli.payments.Bkash - Slow upstream response: 2841ms from https://tokenized.pay.bka.sh/v1.2.0-beta/checkout/create
+2026-10-31T08:03:45.120Z WARN  [http-5] godhuli.ratelimit - Client 203.0.113.42 exceeded 100 req/min; throttling for 30s
+2026-10-31T08:05:02.338Z ERROR [worker-2] godhuli.orders.FulfillmentService - Failed to reserve stock for order 10012 (sku=TEA-DARJ-250G)
+java.lang.IllegalStateException: Insufficient stock: requested=3 available=1
+	at godhuli.inventory.StockLedger.reserve(StockLedger.java:118)
+	at godhuli.orders.FulfillmentService.fulfill(FulfillmentService.java:74)
+	at godhuli.queue.Consumer.lambda$handle$0(Consumer.java:52)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: org.postgresql.util.PSQLException: ERROR: could not serialize access due to concurrent update
+	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2725)
+	... 4 more
+2026-10-31T08:05:02.341Z INFO  [worker-2] godhuli.queue.Consumer - Requeued order.created (attempt 2/5, backoff 4000ms) trace_id=c0ffee00-1234-4abc-9def-00000000beef
+2026-10-31T08:05:06.402Z INFO  [worker-2] godhuli.orders.FulfillmentService - Order 10012 reserved after retry
+2026-10-31T08:10:00.000Z DEBUG [scheduler] godhuli.jobs.Cleanup - Purged 1284 expired carts older than 72h
+2026-10-31T08:12:31.777Z ERROR [http-1] godhuli.http.ErrorHandler - Unhandled exception on PATCH /api/v1/orders/10009 500 request_id=e4d3c2b1-a0f9-4e8d-b7c6-a5b4c3d2e1f0
+TypeError: Cannot read properties of undefined (reading 'currency')
+    at normalizeMoney (/srv/app/dist/money.js:23:17)
+    at OrderController.update (/srv/app/dist/controllers/order.js:88:31)
+2026-10-31T08:15:00.004Z INFO  [scheduler] godhuli.metrics - orders_per_min=42.7 p95_latency_ms=184 error_rate=0.21% healthy=true
+2026-10-31T08:20:12.990Z WARN  [main] godhuli.config - Deprecated setting "shop.legacyCheckout" is still enabled; will be removed in v3.0.0
+2026-10-31T08:30:59.501Z INFO  [main] godhuli.shop.Application - Received SIGTERM, draining 3 in-flight requests...
+2026-10-31T08:31:00.118Z INFO  [main] godhuli.shop.Application - Shutdown complete in 617ms

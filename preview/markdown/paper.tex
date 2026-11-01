@@ -1,0 +1,66 @@
+% Godhuli Shop — technical note on demand forecasting
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage[colorlinks=true, linkcolor=blue]{hyperref}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\orders}[1]{N_{#1}}
+\renewcommand{\vec}[1]{\mathbf{#1}}
+
+\title{Forecasting Daily Orders at Godhuli Shop}
+\author{Nusrat Jahan \and Arif Hossain}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We model daily order counts with a seasonal Poisson regression and compare it
+against a naive baseline. % TODO: add holiday effects
+\end{abstract}
+
+\section{Model}
+\label{sec:model}
+
+Let $\orders{t}$ denote orders on day $t$. We assume
+\begin{equation}
+  \orders{t} \sim \operatorname{Poisson}(\lambda_t), \quad
+  \log \lambda_t = \beta_0 + \vec{x}_t^\top \vec{\beta} + s_{t \bmod 7}
+  \label{eq:poisson}
+\end{equation}
+
+The log-likelihood over $T$ days is
+\begin{align}
+  \ell(\vec{\beta}) &= \sum_{t=1}^{T} \left[ \orders{t} \log \lambda_t - \lambda_t - \log(\orders{t}!) \right] \\
+                    &\approx \sum_{t=1}^{T} \orders{t} \log \lambda_t - \sum_{t=1}^{T} \lambda_t .
+\end{align}
+
+\subsection{Features}
+\begin{itemize}
+  \item Day-of-week seasonality $s_d$, $d \in \{0, \dots, 6\}$
+  \item Active promotions (\emph{binary})
+  \item Lagged orders $\orders{t-1}$ and $\orders{t-7}$
+\end{itemize}
+
+\section{Results}
+Table~\ref{tab:results} summarises error on the October 2026 hold-out set;
+see Equation~\eqref{eq:poisson} for the model.
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{lrr}
+    \toprule
+    Model            & MAE   & $\E[\text{bias}]$ \\
+    \midrule
+    Naive (last week) & 41.2 & $+3.8$ \\
+    Poisson + season  & \textbf{18.7} & $-0.4$ \\
+    \bottomrule
+  \end{tabular}
+  \caption{Hold-out error, 31 days.}
+  \label{tab:results}
+\end{table}
+
+\end{document}

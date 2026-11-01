@@ -1,0 +1,66 @@
+{
+  "$schema": "https://shop.example.com/schemas/order-export.v2.json",
+  "exportedAt": "2026-11-01T08:30:00Z",
+  "version": 2,
+  "complete": true,
+  "orders": [
+    {
+      "id": "c9f1e3a2-7b4d-4e0a-9f12-3d5c8b6a1e07",
+      "number": "ORD-20261031-00042",
+      "status": "shipped",
+      "currency": "USD",
+      "totals": {
+        "subtotal": 84.97,
+        "tax": 6.37,
+        "shipping": 0,
+        "discount": -10.0,
+        "grand": 81.34
+      },
+      "customer": {
+        "id": 1187,
+        "email": "rina.akter@example.com",
+        "name": "Rina \"R.\" Akter",
+        "marketingOptIn": false,
+        "address": {
+          "line1": "42 Lake Road",
+          "line2": null,
+          "city": "Dhaka",
+          "postcode": "1205",
+          "country": "BD",
+          "geo": { "lat": 23.7461, "lng": 90.3742 }
+        }
+      },
+      "lines": [
+        { "sku": "ACM-10423", "name": "Clay mug – amber", "qty": 2, "unitPrice": 18.5 },
+        { "sku": "ACM-20991", "name": "Linen napkins (set of 4)", "qty": 1, "unitPrice": 47.97 }
+      ],
+      "shipments": [
+        {
+          "carrier": "dhl",
+          "tracking": "JD014600006281234567",
+          "events": [
+            { "at": "2026-10-31T14:02:11Z", "code": "PICKED_UP", "location": "Dhaka Hub" },
+            { "at": "2026-11-01T06:45:00Z", "code": "IN_TRANSIT", "location": null }
+          ]
+        }
+      ],
+      "tags": ["gift", "repeat-customer"],
+      "notes": "Leave at the door\nRing twice",
+      "coupon": { "code": "AUTUMN10", "percent": null, "amount": 10 }
+    },
+    {
+      "id": "0b2d4f61-88a1-4c3e-b7d5-91e2f0c4a6b3",
+      "number": "ORD-20261101-00043",
+      "status": "pending",
+      "currency": "EUR",
+      "totals": { "subtotal": 1.2e2, "tax": 0, "shipping": 6.5, "discount": 0, "grand": 126.5 },
+      "customer": null,
+      "lines": [],
+      "shipments": [],
+      "tags": [],
+      "notes": "",
+      "coupon": null
+    }
+  ],
+  "pagination": { "page": 1, "perPage": 50, "total": 2, "next": null }
+}

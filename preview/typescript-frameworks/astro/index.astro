@@ -1,0 +1,76 @@
+---
+// Storefront home page: featured products + live cart island
+import Layout from '../layouts/Layout.astro';
+import ProductCard from '../components/ProductCard.astro';
+import CartButton from '../components/CartButton.tsx';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+interface Props {
+  title?: string;
+}
+
+const { title = 'Godhuli Goods' } = Astro.props;
+const lang = Astro.currentLocale ?? 'en';
+
+const products: CollectionEntry<'products'>[] = (await getCollection('products'))
+  .filter(({ data }) => data.featured && !data.draft)
+  .sort((a, b) => b.data.rating - a.data.rating)
+  .slice(0, 8);
+
+// TODO: pull the banner copy from the CMS instead of hard-coding it
+const banner = { text: 'Free shipping over $75', until: new Date('2026-12-31T23:59:59Z') };
+const showBanner = banner.until.getTime() > Date.now();
+const priceFmt = new Intl.NumberFormat(lang, { style: 'currency', currency: 'USD' });
+---
+
+<Layout title={`${title} — Handmade homeware`} description="Small-batch goods">
+  {showBanner && (
+    <aside class="banner" data-expires={banner.until.toISOString()}>
+      {banner.text} &middot; <a href="/shipping">Details</a>
+    </aside>
+  )}
+
+  <header class="hero">
+    <h1>Welcome to <span class="accent">{title}</span></h1>
+    <CartButton client:load initialCount={0} currency="USD" />
+  </header>
+
+  <section class="grid" aria-label="Featured products">
+    {products.length > 0 ? (
+      products.map((p, i) => (
+        <ProductCard
+          slug={p.id}
+          name={p.data.name}
+          price={priceFmt.format(p.data.priceCents / 100)}
+          image={p.data.image}
+          loading={i < 4 ? 'eager' : 'lazy'}
+        />
+      ))
+    ) : (
+      <p class="empty">Nothing featured right now &mdash; check back soon.</p>
+    )}
+  </section>
+
+  <script>
+    // Runs in the browser; Astro bundles and hoists this script.
+    document.querySelectorAll<HTMLElement>('[data-expires]').forEach((el) => {
+      if (Date.parse(el.dataset.expires!) < Date.now()) el.remove();
+    });
+  </script>
+</Layout>
+
+<style>
+  .hero {
+    display: flex;
+    justify-content: space-between;
+    padding-block: clamp(2rem, 6vw, 5rem);
+  }
+
+  .accent { color: oklch(72% 0.16 55); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: 1.5rem;
+  }
+</style>

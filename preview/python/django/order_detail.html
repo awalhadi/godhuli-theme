@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{# Order detail page — rendered by OrderDetailView #}
+{% block title %}Order {{ order.reference }} &middot; Godhuli Store{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'orders/detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="order-detail" data-order-id="{{ order.pk }}">
+  <header class="order-detail__header">
+    <h1>Order <code>{{ order.reference }}</code></h1>
+    <span class="badge badge--{{ order.status|lower }}">{{ order.get_status_display }}</span>
+    <time datetime="{{ order.created_at|date:'c' }}">
+      Placed {{ order.created_at|naturaltime }}
+    </time>
+  </header>
+
+  {% if order.is_gift %}
+    <p class="notice">🎁 This order will be gift-wrapped.</p>
+  {% endif %}
+
+  <table class="items">
+    <thead>
+      <tr><th>SKU</th><th>Qty</th><th class="num">Unit price</th></tr>
+    </thead>
+    <tbody>
+      {% for item in order.items.all %}
+        <tr class="{% cycle 'odd' 'even' %}">
+          <td>{{ item.sku|upper }}</td>
+          <td>{{ item.quantity }}</td>
+          <td class="num">${{ item.unit_price|floatformat:2|intcomma }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="3">No items on this order.</td></tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr><th colspan="2">Total</th><td class="num">${{ order.total|floatformat:2 }}</td></tr>
+    </tfoot>
+  </table>
+
+  <p class="notes">{{ order.notes|default:"No notes."|linebreaksbr }}</p>
+
+  {# TODO: hide the cancel button once the order is in the warehouse queue #}
+  {% if order.status != "shipped" and order.status != "cancelled" %}
+    <form method="post" action="{% url 'orders:cancel' reference=order.reference %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn--danger" onclick="return confirm('Cancel?');">
+        Cancel order
+      </button>
+    </form>
+  {% endif %}
+
+  <a href="{% url 'orders:list' %}?page={{ request.GET.page|default:1 }}">&larr; Back</a>
+</section>
+{% endblock %}

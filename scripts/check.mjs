@@ -4,7 +4,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CVD_TYPES, apca, composite, deltaE, hexToLch, isHex, simulateCvd } from './lib/color.mjs';
-import { FLAVOR_IDS, ROOT, buildTheme, themeFile } from './lib/tokens.mjs';
+import { FLAVOR_IDS, ROOT, buildTheme, semantic, syntax, themeFile } from './lib/tokens.mjs';
 
 // [role, minLc, maxLc] measured against editor background. Mist trades ~6 Lc for comfort by design.
 const TEXT_GATES = [
@@ -69,6 +69,40 @@ const PAIR_GATES = [
   ['badge', 'activityBarBadge.foreground', ['activityBar.background', 'activityBarBadge.background'], 55],
   ['input', 'input.foreground', ['input.background'], 72],
   ['terminal fg', 'terminal.foreground', ['terminal.background'], 75],
+  ['inactive selection · fg', 'fg', ['editor.background', 'editor.inactiveSelectionBackground'], 66],
+  ['selection · function', 'function', ['editor.background', 'editor.selectionBackground'], 52],
+  ['selection · type', 'type', ['editor.background', 'editor.selectionBackground'], 52],
+  ['word highlight · fg', 'fg', ['editor.background', 'editor.wordHighlightBackground'], 70],
+  ['find in selection · fg', 'fg', ['editor.background', 'editor.findRangeHighlightBackground'], 72],
+  ['bracket match · punctuation', 'punctuation', ['editor.background', 'editorBracketMatch.background'], 40],
+  ['sticky scroll · fg', 'fg', ['editorStickyScroll.background'], 72],
+  ['peek editor · fg', 'fg', ['peekViewEditor.background'], 72],
+  ['merge current · fg', 'fg', ['editor.background', 'merge.currentContentBackground'], 68],
+  ['merge incoming · fg', 'fg', ['editor.background', 'merge.incomingContentBackground'], 68],
+  ['diff insert line · keyword', 'keyword', ['editor.background', 'diffEditor.insertedLineBackground'], 54],
+  ['diff remove line · string', 'string', ['editor.background', 'diffEditor.removedLineBackground'], 62],
+  ['suggest match · selected', 'editorSuggestWidget.focusHighlightForeground', ['editorSuggestWidget.background', 'editorSuggestWidget.selectedBackground'], 55],
+  ['ghost text · current line', 'editorGhostText.foreground', ['editor.lineHighlightBackground'], 34],
+  ['codelens', 'editorCodeLens.foreground', ['editor.background'], 30],
+  ['hover · code block', 'fg', ['editorHoverWidget.codeBackground'], 72],
+];
+
+// Syntax roles that sit side by side in real code must stay apart under every CVD simulation
+// (worst ΔE across normal/protan/deutan/tritan). Mist floors scale by MIST_CVD_FACTOR.
+const SYNTAX_PAIRS = [
+  ['punctuation', 'comment', 10],
+  ['macro', 'regexp', 10],
+  ['string', 'regexp', 10],
+  ['function', 'method', 8],
+  ['function', 'function-builtin', 7],
+  ['method', 'function-builtin', 7],
+  ['type', 'type-builtin', 6],
+  ['type', 'type-param', 12],
+  ['type-builtin', 'namespace', 6],
+  ['variable-builtin', 'property', 6],
+  ['fg', 'parameter', 8],
+  ['fg', 'property', 8],
+  ['inlay', 'comment', 8],
 ];
 
 // Pairs that must stay apart under every CVD simulation. Add/delete and pass/fail must differ in
@@ -81,6 +115,7 @@ const CVD_PAIRS = [
   ['keyword', 'function', 'E', 7],
   ['control', 'function', 'E', 7],
   ['control', 'macro', 'E', 8],
+  ['control', 'keyword', 'E', 8],
 ];
 // Mist deliberately trades hue separation for minimum chroma; its ΔE floors scale by this factor.
 const MIST_CVD_FACTOR = 0.65;
@@ -106,6 +141,29 @@ const FG_MAX_LC = { night: 78 };
 
 const BRACKETS = ['bracket-1', 'bracket-2', 'bracket-3', 'bracket-4', 'bracket-5', 'bracket-6'];
 
+// Semantic selectors: standard VS Code types/modifiers plus those emitted by common language servers
+// (rust-analyzer, Pylance, clangd, gopls, C#, Java). Catches typos that would silently never match.
+const SEMANTIC_TYPES = new Set([
+  'namespace', 'class', 'enum', 'interface', 'struct', 'typeParameter', 'type', 'parameter', 'variable', 'property',
+  'enumMember', 'decorator', 'event', 'function', 'method', 'macro', 'label', 'comment', 'string', 'keyword', 'number',
+  'regexp', 'operator', 'module', 'typeAlias', 'union', 'trait', 'builtinType', 'lifetime', 'selfKeyword',
+  'selfTypeKeyword', 'selfParameter', 'clsParameter', 'formatSpecifier', 'escapeSequence', 'attribute', 'derive',
+  'builtinAttribute', 'deriveHelper', 'boolean', 'builtinConstant', 'constParameter', 'unresolvedReference',
+  'character', 'generic', 'toolModule', 'concept', 'modifier', 'record', 'recordStruct', 'annotation',
+  'annotationMember', 'magicFunction', '*',
+]);
+const SEMANTIC_MODIFIERS = new Set([
+  'declaration', 'definition', 'readonly', 'static', 'deprecated', 'abstract', 'async', 'modification',
+  'documentation', 'defaultLibrary', 'controlFlow', 'mutable', 'consuming', 'unsafe', 'callable', 'constant',
+  'injected', 'intraDocLink', 'library', 'public', 'reference', 'trait', 'associated', 'crateRoot', 'builtin',
+  'typeHint', 'overridden', 'virtual', 'fileScope', 'classScope', 'functionScope', 'globalScope', 'format',
+]);
+const badSelector = (selector) => {
+  const [body, lang] = selector.split(':');
+  const [type, ...mods] = body.split('.');
+  return !SEMANTIC_TYPES.has(type) || mods.some((m) => !SEMANTIC_MODIFIERS.has(m)) || lang === '';
+};
+
 const lc = (text, bg) => Math.abs(apca(text, bg));
 const fmt = (n) => n.toFixed(1).padStart(5);
 
@@ -121,6 +179,15 @@ const flavors = FLAVOR_IDS.map((id) => ({ id, ...buildTheme(id) }));
 const roleSets = flavors.map((f) => Object.keys(f.roles).sort().join());
 console.log('\nrole parity');
 report(roleSets.every((s) => s === roleSets[0]), `all ${flavors.length} flavors define the same ${Object.keys(flavors[0].roles).length} roles`);
+
+// ---- rule hygiene ---------------------------------------------------------
+console.log('\nrule hygiene');
+const owners = {};
+for (const { name, scope } of syntax.rules) for (const sc of scope) (owners[sc] ??= []).push(name);
+const dupes = Object.entries(owners).filter(([, names]) => names.length > 1);
+report(dupes.length === 0, `each TextMate scope has one owner${dupes.length ? `: ${dupes.map(([sc, n]) => `${sc} (${n.join(' / ')})`).join('; ')}` : ''}`);
+const badSelectors = Object.keys(semantic).filter((k) => !k.startsWith('$') && badSelector(k));
+report(badSelectors.length === 0, `semantic selectors use known token types/modifiers${badSelectors.length ? `: ${badSelectors.join(', ')}` : ''}`);
 
 for (const { id, theme, roles, flavor } of flavors) {
   console.log(`\n${flavor.name}  (${themeFile(id)})`);
@@ -179,6 +246,15 @@ for (const { id, theme, roles, flavor } of flavors) {
       }),
     );
     report(worst >= min, `${a} vs ${b}: worst Δ${metric}${metric === 'L' ? '*' : ''} across normal/protan/deutan/tritan ${worst.toFixed(1)}  [${min}+]`);
+  }
+
+  // side-by-side syntax separation
+  for (const [a, b, base] of SYNTAX_PAIRS) {
+    const min = id === 'mist' ? +(base * MIST_CVD_FACTOR).toFixed(1) : base;
+    const worst = Math.min(
+      ...['normal', ...CVD_TYPES].map((t) => (t === 'normal' ? deltaE(roles[a], roles[b]) : deltaE(simulateCvd(roles[a], t), simulateCvd(roles[b], t)))),
+    );
+    report(worst >= min, `${a} vs ${b}: worst ΔE across normal/CVD ${worst.toFixed(1)}  [${min}+]`);
   }
 
   // bracket pair distinctness

@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{# Product detail page — expects `product`, `related` and `form` #}
+{% set price = product.priceMinor / 100 %}
+{% set onSale = product.compareAtMinor is not null and product.compareAtMinor > product.priceMinor %}
+
+{% block title %}{{ product.name|title }} &middot; {{ parent() }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('build/product.css') }}">
+{% endblock %}
+
+{% block body %}
+    <article class="product{{ onSale ? ' product--sale' }}" data-sku="{{ product.sku|e('html_attr') }}">
+        <h1>{{ product.name }}</h1>
+
+        <p class="price">
+            {{ price|format_currency('USD', locale: app.request.locale) }}
+            {% if onSale %}
+                <del>{{ (product.compareAtMinor / 100)|number_format(2, '.', ',') }}</del>
+                {% set pct = (1 - product.priceMinor / product.compareAtMinor) * 100 %}
+                <span class="badge">-{{ pct|round }}%</span>
+            {% endif %}
+        </p>
+
+        <div class="description">
+            {{ product.descriptionHtml|raw }}
+        </div>
+
+        <ul class="tags">
+            {% for tag in product.tags|sort((a, b) => a.name <=> b.name) %}
+                <li class="{{ loop.first ? 'first' : '' }}">
+                    <a href="{{ path('product_index', {q: tag.name}) }}">#{{ tag.name|lower }}</a>
+                </li>
+            {% else %}
+                <li class="muted">{{ 'product.no_tags'|trans }}</li>
+            {% endfor %}
+        </ul>
+
+        {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+            {{ form_start(form, {attr: {class: 'review-form', novalidate: true}}) }}
+                {{ form_row(form.rating, {label: 'Your rating (1–5)'}) }}
+                {{ form_row(form.body) }}
+                <button type="submit">{{ 'Submit review'|trans }}</button>
+            {{ form_end(form) }}
+        {% endif %}
+    </article>
+
+    {# TODO: lazy-load related products with Turbo frames #}
+    {% if related|length > 0 %}
+        <section class="related">
+            <h2>You may also like</h2>
+            {% for item in related|slice(0, 4) %}
+                {% include 'product/_card.html.twig' with {product: item, compact: true} only %}
+            {% endfor %}
+        </section>
+    {% endif %}
+{% endblock %}

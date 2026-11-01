@@ -1,0 +1,76 @@
+// Godhuli Shop order service — public gRPC contract.
+syntax = "proto3";
+
+package godhuli.shop.orders.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+
+option go_package = "github.com/godhuli/shop/gen/orders/v1;ordersv1";
+option java_multiple_files = true;
+option java_package = "com.godhuli.shop.orders.v1";
+
+/* Lifecycle of an order. Zero value must be UNSPECIFIED. */
+enum OrderStatus {
+  ORDER_STATUS_UNSPECIFIED = 0;
+  ORDER_STATUS_PENDING = 1;
+  ORDER_STATUS_PAID = 2;
+  ORDER_STATUS_SHIPPED = 3;
+  ORDER_STATUS_REFUNDED = 4 [deprecated = true];
+}
+
+message Money {
+  string currency_code = 1; // ISO 4217, e.g. "BDT"
+  int64 units = 2;
+  int32 nanos = 3;
+}
+
+message LineItem {
+  string sku = 1;
+  uint32 quantity = 2;
+  Money unit_price = 3;
+}
+
+message Order {
+  string id = 1;
+  string customer_id = 2;
+  OrderStatus status = 3;
+  repeated LineItem items = 4;
+  map<string, string> labels = 5;
+  google.protobuf.Timestamp created_at = 6;
+  optional string gift_message = 7;
+
+  oneof payment {
+    string card_token = 10;
+    string bkash_txn_id = 11;
+    bool cash_on_delivery = 12;
+  }
+
+  reserved 8, 9;
+  reserved "legacy_total";
+}
+
+message GetOrderRequest { string id = 1; }
+
+message ListOrdersRequest {
+  string customer_id = 1;
+  int32 page_size = 2;
+  string page_token = 3;
+}
+
+message ListOrdersResponse {
+  repeated Order orders = 1;
+  string next_page_token = 2;
+}
+
+message UpdateOrderRequest {
+  Order order = 1;
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+service OrderService {
+  rpc GetOrder(GetOrderRequest) returns (Order);
+  rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse);
+  rpc UpdateOrder(UpdateOrderRequest) returns (Order);
+  rpc WatchOrders(ListOrdersRequest) returns (stream Order);
+}

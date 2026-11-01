@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>
+<!DOCTYPE urlset [
+  <!ENTITY site "https://shop.example.com">
+]>
+<!-- Generated nightly by scripts/sitemap.ts. TODO: split into product/category indexes. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+          http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+  <url>
+    <loc>&site;/</loc>
+    <lastmod>2026-11-01</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="bn" href="&site;/bn/"/>
+  </url>
+  <url>
+    <loc>&site;/products/clay-mug-amber</loc>
+    <lastmod>2026-10-28T09:15:00+06:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>&site;/cdn/mug-amber-1200.webp</image:loc>
+      <image:title><![CDATA[Clay mug – amber & "dusk" glaze <limited>]]></image:title>
+      <image:caption>Hand-thrown stoneware, 350&#160;ml</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>&site;/collections/linen?sort=price&amp;dir=asc</loc>
+    <lastmod>2026-10-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>&site;/gift-cards</loc>
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+</urlset>

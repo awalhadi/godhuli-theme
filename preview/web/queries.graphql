@@ -1,0 +1,66 @@
+# Client operations for the account area.
+# FIXME: `OrderSummary` over-fetches `lines` on the list page.
+
+fragment MoneyParts on Money {
+  amount
+  currency
+}
+
+fragment OrderSummary on Order {
+  id
+  number
+  status
+  placedAt
+  total {
+    ...MoneyParts
+  }
+  lines(first: 3) {
+    sku
+    quantity
+  }
+}
+
+query CustomerOrders($customerId: ID!, $status: [OrderStatus!] = [PAID, SHIPPED], $first: Int = 10) {
+  node(id: $customerId) {
+    __typename
+    ... on Customer {
+      id
+      recent: orders(status: $status, first: $first) {
+        ...OrderSummary
+      }
+    }
+  }
+}
+
+query OrderDetail($number: String!, $withCustomer: Boolean = false) {
+  order(number: $number) {
+    ...OrderSummary
+    customer @include(if: $withCustomer) {
+      id
+      email
+    }
+  }
+}
+
+mutation PlaceOrder($input: PlaceOrderInput!) {
+  placeOrder(input: $input) {
+    ...OrderSummary
+  }
+}
+
+mutation CancelOrder($id: ID!) {
+  cancelOrder(id: $id, reason: "Customer changed their mind — via web") {
+    id
+    status
+  }
+}
+
+subscription WatchOrder($id: ID!) {
+  orderStatusChanged(id: $id) {
+    id
+    status
+  }
+}
+
+# Variables for PlaceOrder:
+# { "input": { "lines": [{ "sku": "ACM-10423", "quantity": 2 }], "isGift": true } }

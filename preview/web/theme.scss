@@ -1,0 +1,66 @@
+@use 'sass:map';
+@use 'sass:math';
+@use 'sass:color';
+
+// Brand palette — FIXME: dusk-700 fails contrast on white at small sizes
+$palette: (
+  'dusk-100': #fdf2e3,
+  'dusk-400': #f2a65a,
+  'dusk-700': #b45309,
+  'ink': #2b2118,
+);
+
+$breakpoints: (sm: 40em, md: 64em, lg: 80em) !default;
+$base-size: 16px;
+$enable-shadows: true;
+
+/// Converts a pixel value to rem.
+/// @param {Number} $px - pixel value
+/// @return {Number} rem value
+@function rem($px) {
+  @return math.div($px, $base-size) * 1rem;
+}
+
+@mixin respond($name) {
+  $bp: map.get($breakpoints, $name);
+  @if not $bp {
+    @error "Unknown breakpoint `#{$name}`.";
+  }
+  @media (min-width: $bp) {
+    @content;
+  }
+}
+
+%card-base {
+  border-radius: rem(12px);
+  padding: rem(16px) rem(20px);
+  background: map.get($palette, 'dusk-100');
+}
+
+.order-card {
+  @extend %card-base;
+  color: map.get($palette, 'ink');
+
+  @if $enable-shadows {
+    box-shadow: 0 2px 8px rgba(map.get($palette, 'ink'), 0.12);
+  }
+
+  &__title {
+    font-size: rem(18px);
+    &:hover { color: color.adjust(map.get($palette, 'dusk-700'), $lightness: -8%); }
+  }
+
+  @include respond(md) {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+@each $name, $value in $palette {
+  .text-#{$name} { color: $value !important; }
+  .bg-#{$name} { background-color: $value; }
+}
+
+@for $i from 1 through 4 {
+  .gap-#{$i} { gap: #{$i * 0.25}rem; }
+}

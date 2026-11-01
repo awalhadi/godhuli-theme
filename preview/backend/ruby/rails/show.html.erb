@@ -1,0 +1,55 @@
+<%# Order detail page — app/views/orders/show.html.erb %>
+<% content_for :title, "Order #{@order.reference}" %>
+
+<article class="order" id="<%= dom_id(@order) %>" data-status="<%= @order.status %>">
+  <header>
+    <h1>Order <code><%= @order.reference %></code></h1>
+    <span class="badge badge--<%= @order.status.dasherize %>"><%= @order.status.humanize %></span>
+    <p class="muted">
+      Placed <%= time_ago_in_words(@order.created_at) %> ago
+      by <%= mail_to @order.customer.email %>
+    </p>
+  </header>
+
+  <% if @order.gift? %>
+    <p class="notice">This order will be gift-wrapped &amp; ship without a receipt.</p>
+  <% end %>
+
+  <table class="line-items">
+    <thead>
+      <tr><th>SKU</th><th>Qty</th><th class="num">Price</th></tr>
+    </thead>
+    <tbody>
+      <% @order.line_items.each_with_index do |item, i| %>
+        <tr class="<%= i.even? ? 'even' : 'odd' %>">
+          <td><%= link_to item.sku, product_path(item.product) %></td>
+          <td><%= item.quantity %></td>
+          <td class="num"><%= number_to_currency(item.unit_price_cents / 100.0) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="2">Total</th>
+        <td class="num"><%= @order.display_total %></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <% if @order.free_shipping? %>
+    <p class="perk">🚚 Free shipping applied</p>
+  <% elsif (remaining = Order::FREE_SHIPPING_CENTS - @order.total_cents).positive? %>
+    <p class="hint">Add <%= number_to_currency(remaining / 100.0) %> for free shipping.</p>
+  <% end %>
+
+  <%= simple_format(@order.notes.presence || "No notes.", class: "notes") %>
+
+  <%# TODO: hide once the order reaches the packing stage %>
+  <% unless @order.shipped? || @order.cancelled? %>
+    <%= button_to "Cancel order", cancel_order_path(@order),
+          method: :patch, class: "btn btn--danger",
+          form: { data: { turbo_confirm: "Cancel #{@order.reference}?" } } %>
+  <% end %>
+
+  <%= link_to "← All orders", orders_path, class: "back-link" %>
+</article>

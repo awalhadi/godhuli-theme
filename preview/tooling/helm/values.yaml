@@ -1,0 +1,74 @@
+# Default values for the godhuli-shop chart.
+# Override per environment with: helm upgrade -f values-production.yaml
+
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: ghcr.io/godhuli/shop-api
+  # Defaults to the chart appVersion when empty
+  tag: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: ghcr-credentials
+
+replicaCount: 3
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-body-size: 10m
+  hosts:
+    - host: godhuli.shop
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: api.godhuli.shop
+      paths:
+        - path: /api
+          pathType: Prefix
+  tls:
+    - secretName: godhuli-shop-tls
+      hosts: [godhuli.shop, api.godhuli.shop]
+
+config:
+  currency: BDT
+  taxRate: 0.075
+  features:
+    giftMessages: true
+    partialRefunds: false # enable after 2.5.0
+    legacyCheckout: ~
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    memory: 512Mi
+
+postgresql:
+  enabled: false # use the managed database in production
+  auth:
+    existingSecret: shop-db
+
+nodeSelector: {}
+tolerations: []
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname

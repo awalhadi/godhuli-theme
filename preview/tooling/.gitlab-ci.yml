@@ -1,0 +1,85 @@
+# Godhuli Shop — GitLab pipeline
+stages:
+  - lint
+  - test
+  - build
+  - deploy
+
+variables:
+  NODE_VERSION: "22.11.0"
+  PNPM_STORE: "$CI_PROJECT_DIR/.pnpm-store"
+  IMAGE: "$CI_REGISTRY_IMAGE/api:$CI_COMMIT_SHORT_SHA"
+
+default:
+  image: node:${NODE_VERSION}-alpine
+  interruptible: true
+
+.pnpm: &pnpm
+  before_script:
+    - corepack enable && pnpm config set store-dir "$PNPM_STORE"
+    - pnpm install --frozen-lockfile
+  cache:
+    key:
+      files: [pnpm-lock.yaml]
+    paths:
+      - .pnpm-store/
+    policy: pull-push
+
+.only-mr-and-main: &mr-and-main
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - when: never
+
+lint:
+  stage: lint
+  <<: [*pnpm, *mr-and-main]
+  script:
+    - pnpm eslint . --format gitlab --output-file gl-codequality.json
+  artifacts:
+    reports:
+      codequality: gl-codequality.json
+
+test:unit:
+  stage: test
+  <<: *pnpm
+  services:
+    - name: postgres:16.4-alpine
+      alias: db
+  variables:
+    POSTGRES_PASSWORD: shop
+    DATABASE_URL: postgres://postgres:shop@db:5432/postgres
+  script:
+    - pnpm vitest run --coverage --reporter=junit --outputFile=junit.xml
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    when: always
+    expire_in: 7 days
+    reports:
+      junit: junit.xml
+
+build:image:
+  stage: build
+  image: docker:27.3
+  services: [docker:27.3-dind]
+  script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker build -f tooling/Dockerfile -t "$IMAGE" .
+    - docker push "$IMAGE"
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes: [src/**/*, tooling/Dockerfile]
+
+deploy:production:
+  stage: deploy
+  image: bitnami/kubectl:1.31
+  environment:
+    name: production
+    url: https://godhuli.shop
+  script:
+    - kubectl -n godhuli set image deploy/api api="$IMAGE"
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: manual
+      allow_failure: false

@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling>=1.25", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "godhuli-analytics"
+dynamic = ["version"]
+description = "Order analytics and forecasting for Godhuli Shop"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+  { name = "Nusrat Jahan", email = "nusrat@godhuli.shop" },
+  { name = "Arif Hossain", email = "arif@godhuli.shop" },
+]
+classifiers = [
+  "Programming Language :: Python :: 3.12",
+  "License :: OSI Approved :: MIT License",
+  "Framework :: FastAPI",
+]
+dependencies = [
+  "fastapi>=0.115,<1.0",
+  "pydantic>=2.9",
+  "sqlalchemy[asyncio]~=2.0",
+  "polars>=1.9",
+  "statsmodels>=0.14",
+  'tzdata; sys_platform == "win32"',
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3", "pytest-asyncio", "ruff==0.7.1", "mypy>=1.13"]
+docs = ["mkdocs-material>=9.5"]
+
+[project.scripts]
+godhuli-forecast = "godhuli_analytics.cli:main"
+
+[project.urls]
+Homepage = "https://godhuli.shop"
+Issues = "https://github.com/godhuli/shop/issues"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["migrations/", "*.ipynb"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+  "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+  "db: requires a running PostgreSQL",
+]
+
+[tool.mypy]
+strict = true
+plugins = ["pydantic.mypy"]
