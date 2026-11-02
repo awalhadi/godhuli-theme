@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 — 2026-11-02
+
+**Fixed**
+- **Find matches hid their text.** `editor.findMatchForeground` was `transparent`, and VS Code paints that literally, so the current match (and, depending on the token, other matches) showed an empty box, e.g. `tracking` inside a Tailwind `className` string. The key is removed, so matches keep their syntax color.
+- **Selected text could vanish** in High Contrast (`editor.selectionForeground`) and in the terminal (`terminal.selectionForeground`) for the same reason. Both keys are removed.
+- New gates: no `*Foreground` color may be fully transparent, and strings on the current find match must read at Lc 55+. To meet it, the current-match fill on dark flavors drops from 38% to 30% opacity; its solid border still marks the match.
+
 ## 0.3.0 — 2026-11-01
 
 **New theme.** Existing theme ids are unchanged.

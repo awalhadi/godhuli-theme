@@ -80,6 +80,7 @@ const PAIR_GATES = [
   ['current line · fg', 'fg', ['editor.lineHighlightBackground'], 72],
   ['current line · comment', 'comment', ['editor.lineHighlightBackground'], 43],
   ['find current · fg', 'fg', ['editor.background', 'editor.findMatchBackground'], 55],
+  ['find current · string', 'string', ['editor.background', 'editor.findMatchBackground'], 55],
   ['find other · string', 'string', ['editor.background', 'editor.findMatchHighlightBackground'], 60],
   ['diff insert word · string', 'string', ['editor.background', 'diffEditor.insertedLineBackground', 'diffEditor.insertedTextBackground'], 58],
   ['diff delete word · fg', 'fg', ['editor.background', 'diffEditor.removedLineBackground', 'diffEditor.removedTextBackground'], 62],
@@ -236,6 +237,10 @@ for (const { id, theme, roles, flavor } of flavors) {
   // every emitted color is valid hex
   const bad = Object.entries(theme.colors).filter(([, v]) => !isHex(v));
   report(bad.length === 0, `${Object.keys(theme.colors).length} workbench colors are valid #RRGGBB[AA]${bad.length ? `: ${bad.map(([k]) => k).join(', ')}` : ''}`);
+
+  // a foreground override never hides text: VS Code paints `transparent` literally instead of keeping the syntax color
+  const invisible = Object.entries(theme.colors).filter(([k, v]) => /foreground$/i.test(k) && v.length === 9 && v.endsWith('00'));
+  report(invisible.length === 0, `no text color is fully transparent${invisible.length ? `: ${invisible.map(([k]) => k).join(', ')}` : ''}`);
 
   // canvas comfort
   const canvasL = hexToLch(bg).L;

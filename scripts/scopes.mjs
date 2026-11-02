@@ -48,7 +48,9 @@ const budget = []; // { families, where, text }
 
 for (const file of files) {
   const code = readFileSync(file.path, 'utf8');
-  const { tokens } = highlighter.codeToTokens(code, { lang: file.lang, theme: 'probe', includeExplanation: true });
+  // No time limit: with includeExplanation Shiki tokenizes each line twice, and a cold grammar (PHP) can hit the
+  // 500 ms default in only one pass, leaving the two token lists out of step (crash on `startIndex`).
+  const { tokens } = highlighter.codeToTokens(code, { lang: file.lang, theme: 'probe', includeExplanation: true, tokenizeTimeLimit: 0 });
   const stats = (byLang[file.lang] ??= { files: [], tokens: 0, styled: 0, rules: new Set() });
   stats.files.push(file.rel);
   tokens.forEach((line, n) => {
